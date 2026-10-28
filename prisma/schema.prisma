@@ -1,0 +1,434 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Enums ────────────────────────────────────────────────
+
+enum ExperienceLevel {
+  INTERNSHIP
+  FRESHER
+  JUNIOR
+  MID_LEVEL
+  SENIOR
+  UNKNOWN
+}
+
+enum WorkArrangement {
+  ON_SITE
+  HYBRID
+  REMOTE
+  UNKNOWN
+}
+
+enum OpportunityStatus {
+  SAVED
+  TO_REVIEW
+  READY_TO_APPLY
+  APPLIED
+  ASSESSMENT
+  INTERVIEW
+  OFFER
+  REJECTED
+  CLOSED
+}
+
+enum VerificationFlag {
+  VERIFIED
+  OUTDATED
+  UNCERTAIN
+}
+
+enum ContactCategory {
+  RECRUITER
+  HR
+  SENIOR_FRONTEND_DEV
+  TECH_LEAD
+  ENGINEERING_MANAGER
+  OTHER
+}
+
+enum RelationshipStatus {
+  TO_RESEARCH
+  READY_FOR_OUTREACH
+  REQUEST_SENT
+  CONNECTED
+  MESSAGE_SENT
+  REPLIED
+  REFERRAL_DISCUSSED
+  FOLLOW_UP_NEEDED
+  ARCHIVED
+}
+
+enum MessageGoal {
+  INITIAL_CONNECTION
+  POST_ACCEPTANCE
+  ASK_ABOUT_JOB
+  ASK_ADVICE
+  ASK_REFERRAL
+  THANK_YOU
+  FOLLOW_UP_NO_RESPONSE
+}
+
+enum MessageLanguage {
+  EGYPTIAN_ARABIC
+  ENGLISH
+  MSA
+}
+
+enum MessageTone {
+  CONCISE_DIRECT
+  FRIENDLY_PROFESSIONAL
+  FORMAL
+}
+
+enum MessageStatus {
+  DRAFT
+  APPROVED
+  SENT
+  REPLIED
+  NO_REPLY
+}
+
+enum FollowUpState {
+  OPEN
+  COMPLETED
+  DISMISSED
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+// ─── Models ───────────────────────────────────────────────
+
+model User {
+  id        String   @id @default(uuid()) @db.Uuid
+  email     String   @unique
+  name      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  settings     Settings?
+  companies    Company[]
+  contacts     Contact[]
+  opportunities Opportunity[]
+  messageDrafts MessageDraft[]
+  followUpTasks FollowUpTask[]
+  outreachActivities OutreachActivity[]
+
+  @@map("users")
+}
+
+model Settings {
+  id                    String   @id @default(uuid()) @db.Uuid
+  userId                String   @unique @db.Uuid
+  user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  preferredRole         String   @default("React.js / Next.js Frontend Developer")
+  targetCountry         String   @default("Egypt")
+  preferredExperience   String[] @default(["INTERNSHIP", "FRESHER", "JUNIOR"])
+  workPreference        WorkArrangement @default(REMOTE)
+  preferredLanguage     MessageLanguage @default(ENGLISH)
+  dailyNetworkingTarget Int      @default(5)
+  followUpDefaultDays   Int      @default(3)
+  cvFileReference       String?
+  cvUrl                 String?
+  theme                 String   @default("dark")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("settings")
+}
+
+model Company {
+  id               String   @id @default(uuid()) @db.Uuid
+  userId           String   @db.Uuid
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  name             String
+  website          String?
+  careersUrl       String?
+  location         String?
+  industry         String?
+  technologies     String[] @default([])
+  hiringNotes      String?
+  priority         Priority @default(MEDIUM)
+  lastResearchedAt DateTime?
+  notes            String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  opportunities Opportunity[]
+  contacts      Contact[]
+  followUpTasks FollowUpTask[]
+  outreachActivities OutreachActivity[]
+  tags          TagsOnCompanies[]
+
+  @@index([userId])
+  @@index([name])
+  @@index([priority])
+  @@map("companies")
+}
+
+model Contact {
+  id                  String   @id @default(uuid()) @db.Uuid
+  userId              String   @db.Uuid
+  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  fullName            String
+  role                String?
+  companyId           String?  @db.Uuid
+  company             Company? @relation(fields: [companyId], references: [id], onDelete: SetNull)
+  profileUrl          String?
+  publicSourceUrl     String?
+  category            ContactCategory @default(OTHER)
+  location            String?
+  reasonForTargeting  String?
+  personalizationNotes String?
+  relationshipStatus  RelationshipStatus @default(TO_RESEARCH)
+  lastContactDate     DateTime?
+  nextFollowUpDate    DateTime?
+  networkingPriority  Priority @default(MEDIUM)
+  verificationStatus  VerificationFlag @default(UNCERTAIN)
+  notes               String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  opportunities     ContactsOnOpportunities[]
+  messageDrafts     MessageDraft[]
+  followUpTasks     FollowUpTask[]
+  outreachActivities OutreachActivity[]
+  communicationHistory CommunicationEntry[]
+  tags              TagsOnContacts[]
+
+  @@index([userId])
+  @@index([fullName])
+  @@index([relationshipStatus])
+  @@index([companyId])
+  @@index([nextFollowUpDate])
+  @@map("contacts")
+}
+
+model Opportunity {
+  id                  String   @id @default(uuid()) @db.Uuid
+  userId              String   @db.Uuid
+  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  title               String
+  companyId           String?  @db.Uuid
+  company             Company? @relation(fields: [companyId], references: [id], onDelete: SetNull)
+  description         String?
+  requiredTechnologies String[] @default([])
+  experienceLevel     ExperienceLevel @default(UNKNOWN)
+  location            String?
+  workArrangement     WorkArrangement @default(UNKNOWN)
+  salaryMin           Int?
+  salaryMax           Int?
+  salaryCurrency      String?
+  jobUrl              String?
+  applicationUrl      String?
+  sourceName          String?
+  sourceUrl           String?
+  dateDiscovered      DateTime @default(now())
+  deadline            DateTime?
+  dateApplied         DateTime?
+  priority            Priority @default(MEDIUM)
+  status              OpportunityStatus @default(SAVED)
+  verificationFlag    VerificationFlag @default(UNCERTAIN)
+  notes               String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  contacts       ContactsOnOpportunities[]
+  messageDrafts  MessageDraft[]
+  followUpTasks  FollowUpTask[]
+  outreachActivities OutreachActivity[]
+  tags           TagsOnOpportunities[]
+
+  @@index([userId])
+  @@index([status])
+  @@index([priority])
+  @@index([companyId])
+  @@index([dateDiscovered])
+  @@index([deadline])
+  @@map("opportunities")
+}
+
+model ContactsOnOpportunities {
+  contactId     String @db.Uuid
+  contact       Contact @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  opportunityId String @db.Uuid
+  opportunity   Opportunity @relation(fields: [opportunityId], references: [id], onDelete: Cascade)
+  assignedAt    DateTime @default(now())
+
+  @@id([contactId, opportunityId])
+  @@map("contacts_on_opportunities")
+}
+
+model MessageDraft {
+  id              String   @id @default(uuid()) @db.Uuid
+  userId          String   @db.Uuid
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  contactId       String?  @db.Uuid
+  contact         Contact? @relation(fields: [contactId], references: [id], onDelete: SetNull)
+  opportunityId   String?  @db.Uuid
+  opportunity     Opportunity? @relation(fields: [opportunityId], references: [id], onDelete: SetNull)
+
+  goal            MessageGoal
+  language        MessageLanguage @default(ENGLISH)
+  tone            MessageTone @default(FRIENDLY_PROFESSIONAL)
+  content         String
+  explanation     String?
+  sourceFacts     String[]  @default([])
+  status          MessageStatus @default(DRAFT)
+  reviewed        Boolean  @default(false)
+  sentAt          DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  revisions MessageRevision[]
+
+  @@index([userId])
+  @@index([contactId])
+  @@index([status])
+  @@map("message_drafts")
+}
+
+model MessageRevision {
+  id           String   @id @default(uuid()) @db.Uuid
+  draftId      String   @db.Uuid
+  draft        MessageDraft @relation(fields: [draftId], references: [id], onDelete: Cascade)
+
+  content      String
+  explanation  String?
+  createdAt    DateTime @default(now())
+
+  @@index([draftId])
+  @@map("message_revisions")
+}
+
+model OutreachActivity {
+  id              String   @id @default(uuid()) @db.Uuid
+  userId          String   @db.Uuid
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  contactId       String?  @db.Uuid
+  contact         Contact? @relation(fields: [contactId], references: [id], onDelete: SetNull)
+  companyId       String?  @db.Uuid
+  company         Company? @relation(fields: [companyId], references: [id], onDelete: SetNull)
+  opportunityId   String?  @db.Uuid
+  opportunity     Opportunity? @relation(fields: [opportunityId], references: [id], onDelete: SetNull)
+
+  type            String
+  description     String
+  outcome         String?
+  activityDate    DateTime @default(now())
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([activityDate])
+  @@index([contactId])
+  @@map("outreach_activities")
+}
+
+model FollowUpTask {
+  id              String   @id @default(uuid()) @db.Uuid
+  userId          String   @db.Uuid
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  contactId       String?  @db.Uuid
+  contact         Contact? @relation(fields: [contactId], references: [id], onDelete: SetNull)
+  companyId       String?  @db.Uuid
+  company         Company? @relation(fields: [companyId], references: [id], onDelete: SetNull)
+  opportunityId   String?  @db.Uuid
+  opportunity     Opportunity? @relation(fields: [opportunityId], references: [id], onDelete: SetNull)
+
+  title           String
+  notes           String?
+  dueDate         DateTime
+  priority        Priority @default(MEDIUM)
+  state           FollowUpState @default(OPEN)
+  result          String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([dueDate])
+  @@index([state])
+  @@map("follow_up_tasks")
+}
+
+model CommunicationEntry {
+  id        String   @id @default(uuid()) @db.Uuid
+  contactId String   @db.Uuid
+  contact   Contact  @relation(fields: [contactId], references: [id], onDelete: Cascade)
+
+  type      String
+  content   String
+  date      DateTime @default(now())
+  notes     String?
+
+  createdAt DateTime @default(now())
+
+  @@index([contactId])
+  @@index([date])
+  @@map("communication_entries")
+}
+
+model Tag {
+  id   String @id @default(uuid()) @db.Uuid
+  name String @unique
+
+  companies     TagsOnCompanies[]
+  contacts      TagsOnContacts[]
+  opportunities TagsOnOpportunities[]
+
+  @@map("tags")
+}
+
+model TagsOnCompanies {
+  tagId     String @db.Uuid
+  tag       Tag    @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  companyId String @db.Uuid
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@id([tagId, companyId])
+  @@map("tags_on_companies")
+}
+
+model TagsOnContacts {
+  tagId     String @db.Uuid
+  tag       Tag    @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  contactId String @db.Uuid
+  contact   Contact @relation(fields: [contactId], references: [id], onDelete: Cascade)
+
+  @@id([tagId, contactId])
+  @@map("tags_on_contacts")
+}
+
+model TagsOnOpportunities {
+  tagId         String @db.Uuid
+  tag           Tag    @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  opportunityId String @db.Uuid
+  opportunity   Opportunity @relation(fields: [opportunityId], references: [id], onDelete: Cascade)
+
+  @@id([tagId, opportunityId])
+  @@map("tags_on_opportunities")
+}
