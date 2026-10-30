@@ -1,4 +1,4 @@
-﻿-- CreateEnum
+-- CreateEnum
 CREATE TYPE "ExperienceLevel" AS ENUM ('INTERNSHIP', 'FRESHER', 'JUNIOR', 'MID_LEVEL', 'SENIOR', 'UNKNOWN');
 
 -- CreateEnum

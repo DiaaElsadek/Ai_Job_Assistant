@@ -1,6 +1,8 @@
 import { Sidebar } from '@/src/components/layout/sidebar'
 import { TopBar } from '@/src/components/layout/top-bar'
 
+export const instant = false
+
 export default function DashboardLayout({
   children,
 }: {

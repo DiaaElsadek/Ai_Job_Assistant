@@ -1,13 +1,13 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { signIn } from 'next-auth/react'
 import { Zap, ShieldCheck, AlertCircle, ArrowRight } from 'lucide-react'
 import { Button } from '@/src/components/ui/button'
 import { Input } from '@/src/components/ui/input'
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const callbackUrl = searchParams.get('callbackUrl') || '/'
@@ -50,6 +50,88 @@ export default function LoginPage() {
   }
 
   return (
+    <div className="bg-bg-secondary border border-border rounded-xl p-6 shadow-sm space-y-4">
+      <div className="flex items-center gap-2 pb-3 border-b border-border">
+        <ShieldCheck className="w-4 h-4 text-accent" />
+        <span className="text-xs font-medium text-text-primary">
+          Single-Owner Access
+        </span>
+      </div>
+
+      {error && (
+        <div
+          role="alert"
+          className="flex items-start gap-2.5 p-3 rounded-md bg-error/10 border border-error/20 text-error text-xs"
+        >
+          <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+          <span>{error}</span>
+        </div>
+      )}
+
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <Input
+          id="login-email"
+          type="email"
+          label="Owner Email"
+          placeholder="owner@example.com"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          autoComplete="email"
+          required
+        />
+
+        <Input
+          id="login-password"
+          type="text"
+          label="Password"
+          placeholder="••••••••"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          autoComplete="current-password"
+          required
+        />
+
+        <Button
+          type="submit"
+          className="w-full"
+          size="md"
+          loading={loading}
+          disabled={loading}
+        >
+          Sign In
+          <ArrowRight className="w-4 h-4 ml-1" />
+        </Button>
+      </form>
+    </div>
+  )
+}
+
+function LoginFormFallback() {
+  return (
+    <div className="bg-bg-secondary border border-border rounded-xl p-6 shadow-sm space-y-4">
+      <div className="flex items-center gap-2 pb-3 border-b border-border">
+        <ShieldCheck className="w-4 h-4 text-accent" />
+        <span className="text-xs font-medium text-text-primary">
+          Single-Owner Access
+        </span>
+      </div>
+      <div className="space-y-4 animate-pulse">
+        <div className="space-y-1">
+          <div className="h-3 w-20 bg-bg-tertiary rounded" />
+          <div className="h-8 bg-bg-tertiary rounded-md" />
+        </div>
+        <div className="space-y-1">
+          <div className="h-3 w-16 bg-bg-tertiary rounded" />
+          <div className="h-8 bg-bg-tertiary rounded-md" />
+        </div>
+        <div className="h-8 bg-accent/30 rounded-md" />
+      </div>
+    </div>
+  )
+}
+
+export default function LoginPage() {
+  return (
     <div className="min-h-screen flex items-center justify-center bg-bg-primary px-4 py-12">
       <div className="w-full max-w-sm space-y-6">
         {/* Brand */}
@@ -66,59 +148,9 @@ export default function LoginPage() {
         </div>
 
         {/* Card */}
-        <div className="bg-bg-secondary border border-border rounded-xl p-6 shadow-sm space-y-4">
-          <div className="flex items-center gap-2 pb-3 border-b border-border">
-            <ShieldCheck className="w-4 h-4 text-accent" />
-            <span className="text-xs font-medium text-text-primary">
-              Single-Owner Access
-            </span>
-          </div>
-
-          {error && (
-            <div
-              role="alert"
-              className="flex items-start gap-2.5 p-3 rounded-md bg-error/10 border border-error/20 text-error text-xs"
-            >
-              <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-              <span>{error}</span>
-            </div>
-          )}
-
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <Input
-              id="login-email"
-              type="email"
-              label="Owner Email"
-              placeholder="owner@example.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              autoComplete="email"
-              required
-            />
-
-            <Input
-              id="login-password"
-              type="password"
-              label="Password"
-              placeholder="••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              autoComplete="current-password"
-              required
-            />
-
-            <Button
-              type="submit"
-              className="w-full"
-              size="md"
-              loading={loading}
-              disabled={loading}
-            >
-              Sign In
-              <ArrowRight className="w-4 h-4 ml-1" />
-            </Button>
-          </form>
-        </div>
+        <Suspense fallback={<LoginFormFallback />}>
+          <LoginForm />
+        </Suspense>
 
         <p className="text-center text-[11px] text-text-muted">
           Protected single-user personal dashboard. Auth credentials configured via environment variables.
@@ -127,3 +159,4 @@ export default function LoginPage() {
     </div>
   )
 }
+

@@ -86,3 +86,37 @@ export const loginSchema = z.object({
 })
 
 export type LoginFormData = z.infer<typeof loginSchema>
+
+// ─── Follow-up Task ───────────────────────────────────────
+
+export const followUpSchema = z.object({
+  title: z.string().min(1, 'Task title is required').max(300),
+  dueDate: z.coerce.date(),
+  priority: z.enum(['LOW', 'MEDIUM', 'HIGH', 'URGENT']).default('MEDIUM'),
+  state: z.enum(['OPEN', 'COMPLETED', 'DISMISSED']).default('OPEN'),
+  contactId: z.string().uuid().optional().nullable(),
+  companyId: z.string().uuid().optional().nullable(),
+  opportunityId: z.string().uuid().optional().nullable(),
+  notes: z.string().max(2000).optional().or(z.literal('')),
+  result: z.string().max(2000).optional().or(z.literal('')),
+})
+
+export type FollowUpFormData = z.infer<typeof followUpSchema>
+
+// ─── Settings ─────────────────────────────────────────────
+
+export const settingsSchema = z.object({
+  preferredRole: z.string().min(1, 'Preferred role is required').max(200),
+  targetCountry: z.string().min(1, 'Target country is required').max(100),
+  preferredExperience: z.array(z.string()).default(['INTERNSHIP', 'FRESHER', 'JUNIOR']),
+  workPreference: z.enum(['ON_SITE', 'HYBRID', 'REMOTE', 'UNKNOWN']).default('REMOTE'),
+  preferredLanguage: z.enum(['EGYPTIAN_ARABIC', 'ENGLISH', 'MSA']).default('ENGLISH'),
+  dailyNetworkingTarget: z.coerce.number().int().min(1).max(100).default(5),
+  followUpDefaultDays: z.coerce.number().int().min(1).max(30).default(3),
+  cvFileReference: z.string().max(500).optional().or(z.literal('')),
+  cvUrl: z.string().url('Must be a valid URL').optional().or(z.literal('')),
+  theme: z.enum(['dark', 'light']).default('dark'),
+})
+
+export type SettingsFormData = z.infer<typeof settingsSchema>
+
