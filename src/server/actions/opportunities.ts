@@ -14,6 +14,7 @@ import {
 import { createCompany as createCompanyDb } from '@/src/server/data/companies'
 import { recordStageTransition } from '@/src/server/data/stage-history'
 import { parseJobPostingText, type ParsedJobPosting } from '@/src/lib/ai/job-parser'
+import { safeFetch, SSRFProtectionError } from '@/src/lib/security/safe-fetch'
 
 export interface ActionResult {
   success: boolean
@@ -229,11 +230,13 @@ export async function parseJobPostingAction(
 
     if (!textToParse && url) {
       try {
-        const response = await fetch(url, {
+        const response = await safeFetch(url, {
           headers: {
             'User-Agent':
               'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
           },
+          timeoutMs: 6000,
+          maxBytes: 3 * 1024 * 1024,
         })
         if (response.ok) {
           const html = await response.text()
@@ -245,6 +248,9 @@ export async function parseJobPostingAction(
             .trim()
         }
       } catch (err) {
+        if (err instanceof SSRFProtectionError) {
+          return { success: false, error: `Security Error: ${err.message}` }
+        }
         console.warn('URL scraping failed:', err)
       }
     }

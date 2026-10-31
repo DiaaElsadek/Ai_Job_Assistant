@@ -78,7 +78,7 @@ export const opportunitySchema = z.object({
 
 export type OpportunityFormData = z.infer<typeof opportunitySchema>
 
-// ─── Login ────────────────────────────────────────────────
+// ─── Auth & Registration ──────────────────────────────────
 
 export const loginSchema = z.object({
   email: z.string().email('Please enter a valid email'),
@@ -86,6 +86,49 @@ export const loginSchema = z.object({
 })
 
 export type LoginFormData = z.infer<typeof loginSchema>
+
+export const registerSchema = z
+  .object({
+    name: z.string().min(2, 'Name must be at least 2 characters').max(100),
+    email: z.string().email('Please enter a valid email'),
+    password: z
+      .string()
+      .min(8, 'Password must be at least 8 characters')
+      .max(100)
+      .regex(/[0-9]/, 'Password must contain at least one number')
+      .regex(/[a-zA-Z]/, 'Password must contain at least one letter'),
+    confirmPassword: z.string(),
+  })
+  .refine(data => data.password === data.confirmPassword, {
+    message: 'Passwords do not match',
+    path: ['confirmPassword'],
+  })
+
+export type RegisterFormData = z.infer<typeof registerSchema>
+
+export const forgotPasswordSchema = z.object({
+  email: z.string().email('Please enter a valid email'),
+})
+
+export type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>
+
+export const resetPasswordSchema = z
+  .object({
+    token: z.string().min(1, 'Reset token is required'),
+    password: z
+      .string()
+      .min(8, 'Password must be at least 8 characters')
+      .max(100)
+      .regex(/[0-9]/, 'Password must contain at least one number')
+      .regex(/[a-zA-Z]/, 'Password must contain at least one letter'),
+    confirmPassword: z.string(),
+  })
+  .refine(data => data.password === data.confirmPassword, {
+    message: 'Passwords do not match',
+    path: ['confirmPassword'],
+  })
+
+export type ResetPasswordFormData = z.infer<typeof resetPasswordSchema>
 
 // ─── Follow-up Task ───────────────────────────────────────
 

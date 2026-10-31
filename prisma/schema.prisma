@@ -111,22 +111,41 @@ enum Priority {
 // ─── Models ───────────────────────────────────────────────
 
 model User {
-  id        String   @id @default(uuid()) @db.Uuid
-  email     String   @unique
-  name      String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id                         String    @id @default(uuid()) @db.Uuid
+  email                      String    @unique
+  name                       String?
+  passwordHash               String?
+  emailVerified              DateTime?
+  emailVerificationToken     String?   @unique
+  emailVerificationExpiresAt DateTime?
+  passwordResetToken         String?   @unique
+  passwordResetExpiresAt     DateTime?
+  createdAt                  DateTime  @default(now())
+  updatedAt                  DateTime  @updatedAt
 
-  settings     Settings?
-  companies    Company[]
-  contacts     Contact[]
-  opportunities Opportunity[]
-  messageDrafts MessageDraft[]
-  followUpTasks FollowUpTask[]
+  settings           Settings?
+  companies          Company[]
+  contacts           Contact[]
+  opportunities      Opportunity[]
+  messageDrafts      MessageDraft[]
+  followUpTasks      FollowUpTask[]
   outreachActivities OutreachActivity[]
-  starStories   StarStory[]
+  starStories        StarStory[]
+  aiUsages           AiUsage[]
 
   @@map("users")
+}
+
+model AiUsage {
+  id         String   @id @default(uuid()) @db.Uuid
+  userId     String   @db.Uuid
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  feature    String
+  tokensUsed Int?
+  createdAt  DateTime @default(now())
+
+  @@index([userId, feature, createdAt])
+  @@map("ai_usages")
 }
 
 model Settings {

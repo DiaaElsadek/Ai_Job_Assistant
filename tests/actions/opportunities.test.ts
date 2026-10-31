@@ -37,6 +37,7 @@ import {
 import {
   createOpportunityAction,
   updateOpportunityStatusAction,
+  parseJobPostingAction,
 } from '@/src/server/actions/opportunities'
 
 describe('Opportunity Server Actions', () => {
@@ -130,6 +131,18 @@ describe('Opportunity Server Actions', () => {
     const result = await updateOpportunityStatusAction('opp-uuid-1', 'INTERVIEW')
     expect(result.success).toBe(true)
     expect(updateOpportunityStatus).toHaveBeenCalledWith('opp-uuid-1', 'user-uuid-1', 'INTERVIEW')
+  })
+
+  it('safely catches and blocks SSRF targets when parsing a job posting URL', async () => {
+    vi.mocked(requireAuth).mockResolvedValueOnce({
+      user: { id: 'user-uuid-1', email: 'owner@example.com' },
+      expires: new Date().toISOString(),
+    } as any)
+
+    const result = await parseJobPostingAction('', 'http://169.254.169.254/latest/meta-data')
+    expect(result.success).toBe(false)
+    expect(result.error).toContain('Security Error')
+    expect(result.error).toContain('Forbidden private IP address')
   })
 })
 

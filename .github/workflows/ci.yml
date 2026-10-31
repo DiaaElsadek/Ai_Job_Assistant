@@ -1,0 +1,71 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  verify:
+    name: Lint, Typecheck, Schema Drift & Test Gate
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: jobflow
+          POSTGRES_PASSWORD: jobflow_dev
+          POSTGRES_DB: jobflow
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DATABASE_URL: "postgresql://jobflow:jobflow_dev@localhost:5432/jobflow?schema=public"
+      SHADOW_DATABASE_URL: "postgresql://jobflow:jobflow_dev@localhost:5432/jobflow_shadow?schema=public"
+      AUTH_SECRET: "ci-test-auth-secret-minimum-32-characters-long"
+      AUTH_URL: "http://localhost:3000"
+      OWNER_EMAIL: "owner@example.com"
+      OWNER_PASSWORD_HASH: "$2b$10$b0aQjTHx0QyJm1DnumjxdOx1g5/CQJnxxaI.cX.o2XD4d53dQp6Na"
+      QUEUE_ENABLED: "false"
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Validate Prisma Schema Syntax
+        run: npx prisma validate
+
+      - name: Generate Prisma Client
+        run: npx prisma generate
+
+      - name: Run Database Migrations on CI DB
+        run: npx prisma migrate deploy
+
+      - name: Check Migration Drift
+        run: npm run db:check
+
+      - name: TypeScript Typecheck
+        run: npm run typecheck
+
+      - name: ESLint
+        run: npm run lint
+
+      - name: Run Vitest Test Suite
+        run: npm test
+

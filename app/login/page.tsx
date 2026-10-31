@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, Suspense } from 'react'
+import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { signIn } from 'next-auth/react'
 import { Zap, ShieldCheck, AlertCircle, ArrowRight, Languages } from 'lucide-react'
@@ -75,24 +76,34 @@ function LoginForm() {
         <Input
           id="login-email"
           type="email"
-          label={t('auth.ownerEmail')}
-          placeholder="owner@example.com"
+          label={t('auth.email')}
+          placeholder="user@example.com"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           autoComplete="email"
           required
         />
 
-        <Input
-          id="login-password"
-          type="password"
-          label={t('auth.password')}
-          placeholder="••••••••"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          autoComplete="current-password"
-          required
-        />
+        <div className="space-y-1">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-medium text-text-primary">{t('auth.password')}</span>
+            <Link
+              href="/forgot-password"
+              className="text-xs text-accent hover:underline"
+            >
+              {t('auth.forgotPassword')}
+            </Link>
+          </div>
+          <Input
+            id="login-password"
+            type="password"
+            placeholder="••••••••"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            autoComplete="current-password"
+            required
+          />
+        </div>
 
         <Button
           type="submit"
@@ -104,6 +115,13 @@ function LoginForm() {
           {loading ? t('auth.signingIn') : t('auth.signInBtn')}
           <ArrowRight className={cn('w-4 h-4 ml-1', isRtl && 'mr-1 ml-0 scale-x-[-1]')} />
         </Button>
+
+        <div className="pt-2 text-center text-xs text-text-secondary border-t border-border/50">
+          <span>{t('auth.dontHaveAccount')} </span>
+          <Link href="/register" className="font-semibold text-accent hover:underline">
+            {t('auth.register')}
+          </Link>
+        </div>
       </form>
     </div>
   )

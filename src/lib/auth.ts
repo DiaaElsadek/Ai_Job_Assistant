@@ -1,20 +1,13 @@
 import NextAuth from 'next-auth'
 import Credentials from 'next-auth/providers/credentials'
 import { compare } from 'bcryptjs'
+import { prisma } from '@/src/server/db'
 
 function getOwnerCredentials() {
   const email = process.env.OWNER_EMAIL
   const passwordHash = process.env.OWNER_PASSWORD_HASH
 
   if (!email || !passwordHash) {
-    if (process.env.NODE_ENV === 'production') {
-      throw new Error(
-        'FATAL: OWNER_EMAIL and OWNER_PASSWORD_HASH must be set in production.'
-      )
-    }
-    console.warn(
-      '⚠️  OWNER_EMAIL or OWNER_PASSWORD_HASH not set. Login will not work.'
-    )
     return null
   }
 
@@ -24,29 +17,53 @@ function getOwnerCredentials() {
 export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
     Credentials({
-      name: 'Owner Login',
+      name: 'Credentials Login',
       credentials: {
         email: { label: 'Email', type: 'email' },
         password: { label: 'Password', type: 'password' },
       },
       async authorize(credentials) {
-        const owner = getOwnerCredentials()
-        if (!owner) return null
-
         const email = credentials?.email as string | undefined
         const password = credentials?.password as string | undefined
 
         if (!email || !password) return null
-        if (email !== owner.email) return null
 
-        const isValid = await compare(password, owner.passwordHash)
-        if (!isValid) return null
+        const normalizedEmail = email.trim().toLowerCase()
 
-        return {
-          id: 'a0000000-0000-0000-0000-000000000001',
-          email: owner.email,
-          name: 'Owner',
+        // 1. Check registered multi-user in database
+        try {
+          const dbUser = await prisma.user.findUnique({
+            where: { email: normalizedEmail },
+          })
+
+          if (dbUser && dbUser.passwordHash) {
+            const isValid = await compare(password, dbUser.passwordHash)
+            if (isValid) {
+              return {
+                id: dbUser.id,
+                email: dbUser.email,
+                name: dbUser.name || dbUser.email.split('@')[0],
+              }
+            }
+          }
+        } catch (err) {
+          console.error('[Auth] Database lookup error during authorization:', err)
         }
+
+        // 2. Fallback to owner credentials (backward compatibility)
+        const owner = getOwnerCredentials()
+        if (owner && normalizedEmail === owner.email.trim().toLowerCase()) {
+          const isOwnerValid = await compare(password, owner.passwordHash)
+          if (isOwnerValid) {
+            return {
+              id: 'a0000000-0000-0000-0000-000000000001',
+              email: owner.email,
+              name: 'Owner',
+            }
+          }
+        }
+
+        return null
       },
     }),
   ],
@@ -60,11 +77,19 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   callbacks: {
     authorized({ auth: session, request }) {
       const isLoggedIn = !!session?.user
-      const isLoginPage = request.nextUrl.pathname === '/login'
-      const isApiAuth = request.nextUrl.pathname.startsWith('/api/auth')
+      const { pathname } = request.nextUrl
 
-      if (isApiAuth) return true
-      if (isLoginPage) return true
+      const isPublicPath =
+        pathname === '/login' ||
+        pathname === '/register' ||
+        pathname === '/verify-email' ||
+        pathname === '/forgot-password' ||
+        pathname === '/reset-password'
+      const isApiAuth = pathname.startsWith('/api/auth')
+      const isCronApi = pathname.startsWith('/api/cron')
+      const isLinkedInApi = pathname.startsWith('/api/linkedin')
+
+      if (isApiAuth || isCronApi || isLinkedInApi || isPublicPath) return true
       return isLoggedIn
     },
     jwt({ token, user }) {
