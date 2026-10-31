@@ -16,6 +16,7 @@ import {
   LayoutGrid,
   List,
   Eye,
+  Sparkles,
 } from 'lucide-react'
 import { Button } from '@/src/components/ui/button'
 import { Badge, StatusBadge } from '@/src/components/ui/badge'
@@ -23,6 +24,7 @@ import { EmptyState } from '@/src/components/ui/empty-state'
 import { OpportunityDialog, type OpportunityFormDataInput } from './opportunity-dialog'
 import { DeleteOpportunityDialog } from './delete-opportunity-dialog'
 import { OpportunityKanban } from './opportunity-kanban'
+import { JobImporterDialog } from './job-importer-dialog'
 import { useI18n } from '@/src/lib/i18n'
 import { cn } from '@/src/lib/utils'
 
@@ -89,6 +91,7 @@ export function OpportunityList({
   const { t, isRtl } = useI18n()
 
   const [createDialogOpen, setCreateDialogOpen] = useState(false)
+  const [importerDialogOpen, setImporterDialogOpen] = useState(false)
   const [editingOpportunity, setEditingOpportunity] = useState<OpportunityFormDataInput | null>(null)
   const [deletingOpportunity, setDeletingOpportunity] = useState<{ id: string; title: string } | null>(null)
 
@@ -210,6 +213,16 @@ export function OpportunityList({
               <LayoutGrid className="w-3.5 h-3.5" />
             </button>
           </div>
+
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => setImporterDialogOpen(true)}
+            className="gap-1.5"
+          >
+            <Sparkles className="w-3.5 h-3.5 text-accent" />
+            <span>{isRtl ? 'استيراد بالذكاء الاصطناعي' : 'Import with AI'}</span>
+          </Button>
 
           <Button size="sm" onClick={() => setCreateDialogOpen(true)}>
             <Plus className={cn("w-4 h-4", isRtl ? "ml-1.5" : "mr-1.5")} />
@@ -498,6 +511,12 @@ export function OpportunityList({
       )}
 
       {/* Dialogs */}
+      <JobImporterDialog
+        open={importerDialogOpen}
+        onClose={() => setImporterDialogOpen(false)}
+        companies={companies}
+      />
+
       <OpportunityDialog
         open={createDialogOpen || !!editingOpportunity}
         onClose={() => {

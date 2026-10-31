@@ -1,9 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { usePathname } from 'next/navigation'
 import Link from 'next/link'
-import { Sun, Moon, LogOut, Menu, X, Zap, Languages } from 'lucide-react'
+import { Sun, Moon, LogOut, Menu, X, Zap, Languages, Search } from 'lucide-react'
 import {
   LayoutDashboard,
   Briefcase,
@@ -18,12 +18,26 @@ import { useTheme } from '@/src/components/theme-provider'
 import { useI18n } from '@/src/lib/i18n'
 import { cn } from '@/src/lib/utils'
 import { signOut } from 'next-auth/react'
+import { CommandPalette } from '@/src/components/layout/command-palette'
 
 export function TopBar() {
   const { theme, toggleTheme } = useTheme()
   const { locale, toggleLocale, t, isRtl } = useI18n()
   const pathname = usePathname()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [paletteOpen, setPaletteOpen] = useState(false)
+
+  // Listen for global Ctrl+K / Cmd+K
+  useEffect(() => {
+    const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault()
+        setPaletteOpen((prev) => !prev)
+      }
+    }
+    window.addEventListener('keydown', handleGlobalKeyDown)
+    return () => window.removeEventListener('keydown', handleGlobalKeyDown)
+  }, [])
 
   const mobileNavItems = [
     { href: '/', label: t('nav.dashboard'), icon: LayoutDashboard },
@@ -62,6 +76,9 @@ export function TopBar() {
 
   return (
     <>
+      {/* Omni-search Command Palette (Ctrl+K) */}
+      <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} />
+
       <header className="sticky top-0 z-30 flex items-center justify-between h-12 px-4 border-b border-border bg-bg-primary/80 backdrop-blur-sm">
         {/* Mobile menu button */}
         <button
@@ -87,6 +104,18 @@ export function TopBar() {
 
         {/* Actions */}
         <div className="flex items-center gap-2">
+          {/* Quick Search Ctrl+K Button */}
+          <button
+            onClick={() => setPaletteOpen(true)}
+            className="hidden sm:inline-flex items-center gap-2 px-2.5 h-8 rounded-md text-xs text-text-muted bg-bg-secondary border border-border hover:border-accent/40 hover:text-text-primary transition-colors"
+          >
+            <Search className="w-3.5 h-3.5 text-text-muted" />
+            <span>{isRtl ? 'بحث سريع...' : 'Search...'}</span>
+            <kbd className="px-1.5 py-0.5 rounded text-[10px] font-mono bg-bg-tertiary border border-border">
+              Ctrl+K
+            </kbd>
+          </button>
+
           {/* Language Switcher */}
           <button
             onClick={toggleLocale}

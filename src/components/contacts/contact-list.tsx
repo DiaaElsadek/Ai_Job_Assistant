@@ -212,8 +212,8 @@ export function ContactList({
             <option value="MESSAGE_SENT">{t('contacts.stages.MESSAGE_SENT')}</option>
             <option value="REPLIED">{t('contacts.stages.REPLIED')}</option>
             <option value="REFERRAL_DISCUSSED">{t('contacts.stages.REFERRAL_DISCUSSED')}</option>
-            <option value="CALL_SCHEDULED">{t('contacts.stages.CALL_SCHEDULED')}</option>
-            <option value="COLD">{t('contacts.stages.COLD')}</option>
+            <option value="FOLLOW_UP_NEEDED">{t('contacts.stages.FOLLOW_UP_NEEDED')}</option>
+            <option value="ARCHIVED">{t('contacts.stages.ARCHIVED')}</option>
           </select>
 
           <select

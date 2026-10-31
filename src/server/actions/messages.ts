@@ -8,6 +8,7 @@ import {
   generateOutreachMessage,
   type GenerateMessageInput,
 } from '@/src/lib/ai/message-generator'
+import { checkRateLimit } from '@/src/lib/rate-limiter'
 import {
   createMessageDraft as createMessageDraftDb,
   updateMessageDraft as updateMessageDraftDb,
@@ -36,6 +37,15 @@ export async function generateOutreachAction(params: {
     const session = await requireAuth()
     const userId = session.user?.id
     if (!userId) return { success: false, error: 'Unauthorized' }
+
+    // Rate limiting: max 10 AI generations per minute
+    const rateLimit = checkRateLimit(userId, { maxTokens: 10, refillRatePerMinute: 10 })
+    if (!rateLimit.allowed) {
+      return {
+        success: false,
+        error: `AI generation rate limit reached. Please wait ${rateLimit.resetInSeconds}s before generating another draft.`,
+      }
+    }
 
     // Fetch context from contact, opportunity, and candidate settings
     const [contact, opportunity, settings] = await Promise.all([

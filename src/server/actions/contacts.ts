@@ -151,9 +151,10 @@ export async function linkOpportunityToContactAction(
 ): Promise<ActionResult> {
   try {
     const session = await requireAuth()
-    if (!session.user?.id) return { success: false, error: 'Unauthorized' }
+    const userId = session.user?.id
+    if (!userId) return { success: false, error: 'Unauthorized' }
 
-    await linkOpportunityToContactDb(contactId, opportunityId)
+    await linkOpportunityToContactDb(contactId, opportunityId, userId)
 
     revalidatePath('/contacts')
     revalidatePath(`/contacts/${contactId}`)
@@ -171,9 +172,10 @@ export async function unlinkOpportunityFromContactAction(
 ): Promise<ActionResult> {
   try {
     const session = await requireAuth()
-    if (!session.user?.id) return { success: false, error: 'Unauthorized' }
+    const userId = session.user?.id
+    if (!userId) return { success: false, error: 'Unauthorized' }
 
-    await unlinkOpportunityFromContactDb(contactId, opportunityId)
+    await unlinkOpportunityFromContactDb(contactId, opportunityId, userId)
 
     revalidatePath('/contacts')
     revalidatePath(`/contacts/${contactId}`)
@@ -191,7 +193,8 @@ export async function logTouchpointAction(
 ): Promise<ActionResult> {
   try {
     const session = await requireAuth()
-    if (!session.user?.id) return { success: false, error: 'Unauthorized' }
+    const userId = session.user?.id
+    if (!userId) return { success: false, error: 'Unauthorized' }
 
     const type = (formData.get('type') as string) || 'LinkedIn Message'
     const content = (formData.get('content') as string) || ''
@@ -203,12 +206,16 @@ export async function logTouchpointAction(
       return { success: false, error: 'Touchpoint notes or summary are required' }
     }
 
-    await logCommunicationDb(contactId, {
-      type,
-      content,
-      date,
-      notes,
-    })
+    await logCommunicationDb(
+      contactId,
+      {
+        type,
+        content,
+        date,
+        notes,
+      },
+      userId
+    )
 
     revalidatePath('/contacts')
     revalidatePath(`/contacts/${contactId}`)

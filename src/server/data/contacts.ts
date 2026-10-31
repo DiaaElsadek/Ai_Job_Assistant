@@ -183,8 +183,19 @@ export async function updateContactRelationshipStatus(
 
 export async function linkOpportunityToContact(
   contactId: string,
-  opportunityId: string
+  opportunityId: string,
+  userId?: string
 ) {
+  if (userId) {
+    const [contact, opportunity] = await Promise.all([
+      prisma.contact.findFirst({ where: { id: contactId, userId } }),
+      prisma.opportunity.findFirst({ where: { id: opportunityId, userId } }),
+    ])
+    if (!contact || !opportunity) {
+      throw new Error('Contact or opportunity not found or unauthorized')
+    }
+  }
+
   return prisma.contactsOnOpportunities.upsert({
     where: {
       contactId_opportunityId: {
@@ -202,8 +213,16 @@ export async function linkOpportunityToContact(
 
 export async function unlinkOpportunityFromContact(
   contactId: string,
-  opportunityId: string
+  opportunityId: string,
+  userId?: string
 ) {
+  if (userId) {
+    const contact = await prisma.contact.findFirst({ where: { id: contactId, userId } })
+    if (!contact) {
+      throw new Error('Contact not found or unauthorized')
+    }
+  }
+
   return prisma.contactsOnOpportunities.deleteMany({
     where: {
       contactId,
@@ -221,8 +240,18 @@ export async function logCommunication(
     content: string
     date?: Date
     notes?: string | null
-  }
+  },
+  userId?: string
 ) {
+  if (userId) {
+    const contact = await prisma.contact.findFirst({
+      where: { id: contactId, userId },
+    })
+    if (!contact) {
+      throw new Error('Contact not found or unauthorized')
+    }
+  }
+
   const entry = await prisma.communicationEntry.create({
     data: {
       contactId,

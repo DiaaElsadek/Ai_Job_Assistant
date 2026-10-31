@@ -1,5 +1,11 @@
 import 'server-only'
 import { prisma } from '@/src/server/db'
+import {
+  getPipelineVelocityMetrics,
+  getRejectionBreakdown,
+  type StageVelocityMetric,
+  type RejectionReasonCount,
+} from '@/src/server/data/stage-history'
 
 export async function getAnalyticsData(userId: string) {
   const [
@@ -10,6 +16,8 @@ export async function getAnalyticsData(userId: string) {
     followUps,
     activities,
     settings,
+    velocityMetrics,
+    rejectionBreakdown,
   ] = await Promise.all([
     prisma.company.count({ where: { userId } }),
     prisma.opportunity.findMany({
@@ -34,6 +42,8 @@ export async function getAnalyticsData(userId: string) {
       orderBy: { activityDate: 'asc' },
     }),
     prisma.settings.findFirst({ where: { userId } }),
+    getPipelineVelocityMetrics(userId),
+    getRejectionBreakdown(userId),
   ])
 
   // 1. Application Funnel Counts
@@ -99,6 +109,8 @@ export async function getAnalyticsData(userId: string) {
     funnel,
     relationshipStages,
     categoryCounts,
+    velocityMetrics,
+    rejectionBreakdown,
   }
 }
 

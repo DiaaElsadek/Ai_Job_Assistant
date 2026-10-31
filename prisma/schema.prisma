@@ -124,6 +124,7 @@ model User {
   messageDrafts MessageDraft[]
   followUpTasks FollowUpTask[]
   outreachActivities OutreachActivity[]
+  starStories   StarStory[]
 
   @@map("users")
 }
@@ -142,6 +143,9 @@ model Settings {
   followUpDefaultDays   Int      @default(3)
   cvFileReference       String?
   cvUrl                 String?
+  cvSummary             String?  @db.Text
+  calendarFeedToken     String?  @unique @default(uuid())
+  calendarFeedEnabled   Boolean  @default(false)
   theme                 String   @default("dark")
 
   createdAt DateTime @default(now())
@@ -214,6 +218,7 @@ model Contact {
   tags              TagsOnContacts[]
 
   @@index([userId])
+  @@index([userId, relationshipStatus])
   @@index([fullName])
   @@index([relationshipStatus])
   @@index([companyId])
@@ -230,6 +235,7 @@ model Opportunity {
   companyId           String?  @db.Uuid
   company             Company? @relation(fields: [companyId], references: [id], onDelete: SetNull)
   description         String?
+  rawPostingText      String?  @db.Text
   requiredTechnologies String[] @default([])
   experienceLevel     ExperienceLevel @default(UNKNOWN)
   location            String?
@@ -246,6 +252,7 @@ model Opportunity {
   dateApplied         DateTime?
   priority            Priority @default(MEDIUM)
   status              OpportunityStatus @default(SAVED)
+  rejectionReason     RejectionReason?
   verificationFlag    VerificationFlag @default(UNCERTAIN)
   notes               String?
 
@@ -256,9 +263,14 @@ model Opportunity {
   messageDrafts  MessageDraft[]
   followUpTasks  FollowUpTask[]
   outreachActivities OutreachActivity[]
+  matchAnalysis  OpportunityMatchAnalysis?
+  stageHistories OpportunityStageHistory[]
+  interviewRounds InterviewRound[]
   tags           TagsOnOpportunities[]
 
   @@index([userId])
+  @@index([userId, status])
+  @@index([userId, createdAt])
   @@index([status])
   @@index([priority])
   @@index([companyId])
@@ -371,6 +383,7 @@ model FollowUpTask {
   updatedAt DateTime @updatedAt
 
   @@index([userId])
+  @@index([userId, state, dueDate])
   @@index([dueDate])
   @@index([state])
   @@map("follow_up_tasks")
@@ -432,4 +445,94 @@ model TagsOnOpportunities {
 
   @@id([tagId, opportunityId])
   @@map("tags_on_opportunities")
+}
+
+// ─── Phase B & C Models ────────────────────────────────────
+
+enum RejectionReason {
+  GHOSTED
+  TECH_STACK_GAP
+  EXPERIENCE_LEVEL
+  SALARY_MISMATCH
+  POSITION_CANCELLED
+  OTHER
+}
+
+model OpportunityMatchAnalysis {
+  id               String      @id @default(uuid()) @db.Uuid
+  opportunityId    String      @unique @db.Uuid
+  opportunity      Opportunity @relation(fields: [opportunityId], references: [id], onDelete: Cascade)
+  matchScore       Int         // 0 to 100
+  matchedSkills    String[]    @default([])
+  missingSkills    String[]    @default([])
+  tailoredBullets  String[]    @default([])
+  coverLetterDraft String?     @db.Text
+  analyzedAt       DateTime    @default(now())
+
+  @@index([opportunityId])
+  @@map("opportunity_match_analyses")
+}
+
+model OpportunityStageHistory {
+  id              String            @id @default(uuid()) @db.Uuid
+  opportunityId   String            @db.Uuid
+  opportunity     Opportunity       @relation(fields: [opportunityId], references: [id], onDelete: Cascade)
+  fromStatus      OpportunityStatus?
+  toStatus        OpportunityStatus
+  rejectionReason RejectionReason?
+  notes           String?
+  changedAt       DateTime          @default(now())
+
+  @@index([opportunityId])
+  @@index([changedAt])
+  @@map("opportunity_stage_histories")
+}
+
+enum InterviewRoundType {
+  RECRUITER_SCREEN
+  TECHNICAL_PHONE
+  LIVE_CODING
+  SYSTEM_DESIGN
+  BEHAVIORAL_CULTURE
+  MANAGEMENT_FINAL
+}
+
+model InterviewRound {
+  id              String             @id @default(uuid()) @db.Uuid
+  opportunityId   String             @db.Uuid
+  opportunity     Opportunity        @relation(fields: [opportunityId], references: [id], onDelete: Cascade)
+  roundNumber     Int
+  roundType       InterviewRoundType
+  scheduledAt     DateTime?
+  interviewerName String?
+  interviewerRole String?
+  questionsAsked  String[]           @default([])
+  userNotes       String?            @db.Text
+  rating          Int?               // 1-5 scale
+  completed       Boolean            @default(false)
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+
+  starStories     StarStory[]
+
+  @@index([opportunityId])
+  @@map("interview_rounds")
+}
+
+model StarStory {
+  id          String          @id @default(uuid()) @db.Uuid
+  userId      String          @db.Uuid
+  user        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  roundId     String?         @db.Uuid
+  round       InterviewRound? @relation(fields: [roundId], references: [id], onDelete: SetNull)
+  title       String
+  situation   String          @db.Text
+  task        String          @db.Text
+  action      String          @db.Text
+  result      String          @db.Text
+  techTags    String[]        @default([])
+  createdAt   DateTime        @default(now())
+
+  @@index([userId])
+  @@map("star_stories")
 }

@@ -202,6 +202,7 @@
       "HR": "أخصائي موارد بشرية (HR)",
       "ENGINEERING_MANAGER": "مدير هندسي (Engineering Manager)",
       "TECH_LEAD": "قائد تقني (Tech Lead)",
+      "SENIOR_FRONTEND_DEV": "مطور واجهات أول (Senior Frontend)",
       "SENIOR_DEV": "مطور أول (Senior Developer)",
       "PEER": "زميل / مطور في المجال",
       "OTHER": "أخرى"
@@ -214,6 +215,8 @@
       "MESSAGE_SENT": "تم إرسال الرسالة",
       "REPLIED": "تم الرد",
       "REFERRAL_DISCUSSED": "تمت مناقشة الترشيح",
+      "FOLLOW_UP_NEEDED": "متابعة مطلوبة",
+      "ARCHIVED": "مؤرشف",
       "CALL_SCHEDULED": "تم تحديد موعد مكالمة",
       "COLD": "غير نشط / مؤجل"
     },

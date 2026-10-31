@@ -14,6 +14,8 @@ import {
   Sliders,
 } from 'lucide-react'
 import { Button } from '@/src/components/ui/button'
+import { DailyActionPlanner } from '@/src/components/dashboard/daily-action-planner'
+import type { PlannerAction } from '@/src/lib/planner/next-best-action'
 import { useI18n } from '@/src/lib/i18n'
 import { cn } from '@/src/lib/utils'
 
@@ -23,6 +25,7 @@ interface DashboardViewProps {
   contactCount: number
   messageCount: number
   pendingFollowUpCount: number
+  dailyActions?: PlannerAction[]
 }
 
 export function DashboardView({
@@ -31,6 +34,7 @@ export function DashboardView({
   contactCount,
   messageCount,
   pendingFollowUpCount,
+  dailyActions = [],
 }: DashboardViewProps) {
   const { t, isRtl } = useI18n()
 
@@ -76,6 +80,9 @@ export function DashboardView({
           </Link>
         </div>
       </div>
+
+      {/* Daily High-Impact Actions Planner */}
+      <DailyActionPlanner actions={dailyActions} />
 
       {/* Metrics Row */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">

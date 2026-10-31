@@ -16,8 +16,12 @@ import {
 import { requireAuth } from '@/src/server/auth'
 import { getOpportunity } from '@/src/server/data/opportunities'
 import { listCompaniesForSelect } from '@/src/server/data/companies'
+import { getOpportunityMatchAnalysis } from '@/src/server/data/cv-match'
+import { getInterviewRounds } from '@/src/server/data/interviews'
 import { Badge, StatusBadge } from '@/src/components/ui/badge'
 import { OpportunityDetailActions } from '@/src/components/opportunities/opportunity-detail-actions'
+import { CVMatchWidget } from '@/src/components/opportunities/cv-match-widget'
+import { InterviewPrepSection } from '@/src/components/interviews/interview-prep-section'
 
 export const instant = false
 
@@ -30,9 +34,11 @@ export default async function OpportunityDetailPage({ params }: OpportunityDetai
   const userId = session.user!.id!
   const { id } = await params
 
-  const [opportunity, companies] = await Promise.all([
+  const [opportunity, companies, matchAnalysis, interviewRounds] = await Promise.all([
     getOpportunity(id, userId),
     listCompaniesForSelect(userId),
+    getOpportunityMatchAnalysis(id, userId),
+    getInterviewRounds(id, userId),
   ])
 
   if (!opportunity) {
@@ -144,6 +150,20 @@ export default async function OpportunityDetailPage({ params }: OpportunityDetai
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left column (2 cols) */}
         <div className="lg:col-span-2 space-y-6">
+          {/* CV-to-Job ATS Match Engine */}
+          <CVMatchWidget
+            opportunityId={opportunity.id}
+            jobTitle={opportunity.title}
+            initialAnalysis={matchAnalysis}
+          />
+
+          {/* Interview Prep & Rounds Tracker */}
+          <InterviewPrepSection
+            opportunityId={opportunity.id}
+            jobTitle={opportunity.title}
+            rounds={interviewRounds}
+          />
+
           {/* Tech stack */}
           {opportunity.requiredTechnologies.length > 0 && (
             <div className="bg-bg-secondary border border-border rounded-xl p-5 shadow-sm space-y-3">

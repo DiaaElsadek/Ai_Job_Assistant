@@ -16,6 +16,9 @@ import {
   Send,
   AlertCircle,
 } from 'lucide-react'
+import { StageVelocityChart } from '@/src/components/analytics/stage-velocity-chart'
+import { RejectionBreakdown } from '@/src/components/analytics/rejection-breakdown'
+import type { StageVelocityMetric, RejectionReasonCount } from '@/src/server/data/stage-history'
 import { useI18n } from '@/src/lib/i18n'
 
 interface AnalyticsDashboardProps {
@@ -56,11 +59,13 @@ interface AnalyticsDashboardProps {
       managers: number
       other: number
     }
+    velocityMetrics?: StageVelocityMetric[]
+    rejectionBreakdown?: RejectionReasonCount[]
   }
 }
 
 export function AnalyticsDashboard({ data }: { data: AnalyticsDashboardProps['data'] }) {
-  const { kpis, funnel, relationshipStages, categoryCounts } = data
+  const { kpis, funnel, relationshipStages, categoryCounts, velocityMetrics = [], rejectionBreakdown = [] } = data
   const { t, isRtl } = useI18n()
 
   const funnelChartData = [
@@ -292,6 +297,12 @@ export function AnalyticsDashboard({ data }: { data: AnalyticsDashboardProps['da
             <span className="text-[10px] text-text-muted">{isRtl ? 'إعادة تنشيط' : 'Re-engage'}</span>
           </div>
         </div>
+      </div>
+
+      {/* Advanced Stage Velocity & Post-Mortem Analytics */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <StageVelocityChart metrics={velocityMetrics} />
+        <RejectionBreakdown reasons={rejectionBreakdown} />
       </div>
     </div>
   )
