@@ -17,6 +17,8 @@ import { EmptyState } from '@/src/components/ui/empty-state'
 import { FollowUpCard, type FollowUpTaskItem } from './follow-up-card'
 import { FollowUpDialog, type FollowUpFormDataInput } from './follow-up-dialog'
 import { DeleteFollowUpDialog } from './delete-follow-up-dialog'
+import { useI18n } from '@/src/lib/i18n'
+import { cn } from '@/src/lib/utils'
 
 interface FollowUpBoardProps {
   tasks: {
@@ -52,6 +54,7 @@ export function FollowUpBoard({
 }: FollowUpBoardProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const { t, isRtl } = useI18n()
 
   const [createDialogOpen, setCreateDialogOpen] = useState(false)
   const [editingTask, setEditingTask] = useState<FollowUpFormDataInput | null>(null)
@@ -100,16 +103,16 @@ export function FollowUpBoard({
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-xl font-bold text-text-primary tracking-tight">
-            Follow-up Queue
+            {t('followUps.title')}
           </h1>
           <p className="text-xs text-text-secondary mt-1">
-            Stay on top of networking check-ins, application follow-ups, and promised touchpoints.
+            {t('followUps.subtitle')}
           </p>
         </div>
 
         <Button size="sm" onClick={() => setCreateDialogOpen(true)}>
-          <Plus className="w-4 h-4 mr-1.5" />
-          Schedule Follow-up
+          <Plus className={cn("w-4 h-4", isRtl ? "ml-1.5" : "mr-1.5")} />
+          {t('followUps.newFollowUp')}
         </Button>
       </div>
 
@@ -125,7 +128,7 @@ export function FollowUpBoard({
           }`}
         >
           <AlertCircle className="w-3.5 h-3.5 text-error" />
-          Overdue
+          {t('followUps.overdue')}
           {tasks.counts.overdue > 0 && (
             <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-error text-white font-bold">
               {tasks.counts.overdue}
@@ -143,7 +146,7 @@ export function FollowUpBoard({
           }`}
         >
           <Clock className="w-3.5 h-3.5 text-warning" />
-          Due Today
+          {t('followUps.today')}
           {tasks.counts.today > 0 && (
             <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-warning text-black font-bold">
               {tasks.counts.today}
@@ -161,7 +164,7 @@ export function FollowUpBoard({
           }`}
         >
           <Calendar className="w-3.5 h-3.5 text-info" />
-          Upcoming
+          {t('followUps.upcoming')}
           <span className="text-[10px] text-text-muted">({tasks.counts.upcoming})</span>
         </button>
 
@@ -175,7 +178,7 @@ export function FollowUpBoard({
           }`}
         >
           <CheckCircle2 className="w-3.5 h-3.5 text-success" />
-          Completed
+          {t('followUps.completed')}
           <span className="text-[10px] text-text-muted">({tasks.counts.completed})</span>
         </button>
 
@@ -188,7 +191,7 @@ export function FollowUpBoard({
               : 'text-text-secondary hover:text-text-primary'
           }`}
         >
-          All Tasks
+          {isRtl ? 'جميع المهام' : 'All Tasks'}
           <span className="text-[10px] text-text-muted">({tasks.counts.totalOpen})</span>
         </button>
       </div>

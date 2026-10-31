@@ -3,6 +3,8 @@ import { listOpportunities } from '@/src/server/data/opportunities'
 import { listCompaniesForSelect } from '@/src/server/data/companies'
 import { OpportunityList, type OpportunityItem } from '@/src/components/opportunities/opportunity-list'
 
+export const instant = false
+
 interface OpportunitiesPageProps {
   searchParams: Promise<{
     search?: string

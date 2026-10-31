@@ -23,6 +23,8 @@ import { EmptyState } from '@/src/components/ui/empty-state'
 import { OpportunityDialog, type OpportunityFormDataInput } from './opportunity-dialog'
 import { DeleteOpportunityDialog } from './delete-opportunity-dialog'
 import { OpportunityKanban } from './opportunity-kanban'
+import { useI18n } from '@/src/lib/i18n'
+import { cn } from '@/src/lib/utils'
 
 export interface OpportunityItem {
   id: string
@@ -84,6 +86,7 @@ export function OpportunityList({
 }: OpportunityListProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const { t, isRtl } = useI18n()
 
   const [createDialogOpen, setCreateDialogOpen] = useState(false)
   const [editingOpportunity, setEditingOpportunity] = useState<OpportunityFormDataInput | null>(null)
@@ -172,10 +175,10 @@ export function OpportunityList({
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-xl font-bold text-text-primary tracking-tight">
-            Target Opportunities
+            {t('opportunities.title')}
           </h1>
           <p className="text-xs text-text-secondary mt-1">
-            Track job openings, match tech requirements, and manage application stages.
+            {t('opportunities.subtitle')}
           </p>
         </div>
 
@@ -190,7 +193,7 @@ export function OpportunityList({
                   ? 'bg-accent text-black font-semibold'
                   : 'text-text-muted hover:text-text-primary'
               }`}
-              title="Table view"
+              title={t('opportunities.tableView')}
             >
               <List className="w-3.5 h-3.5" />
             </button>
@@ -202,15 +205,15 @@ export function OpportunityList({
                   ? 'bg-accent text-black font-semibold'
                   : 'text-text-muted hover:text-text-primary'
               }`}
-              title="Pipeline board view"
+              title={t('opportunities.kanbanView')}
             >
               <LayoutGrid className="w-3.5 h-3.5" />
             </button>
           </div>
 
           <Button size="sm" onClick={() => setCreateDialogOpen(true)}>
-            <Plus className="w-4 h-4 mr-1.5" />
-            Add Opportunity
+            <Plus className={cn("w-4 h-4", isRtl ? "ml-1.5" : "mr-1.5")} />
+            {t('opportunities.addOpportunity')}
           </Button>
         </div>
       </div>
@@ -218,13 +221,16 @@ export function OpportunityList({
       {/* Filters Bar */}
       <div className="flex flex-col md:flex-row gap-3">
         <form onSubmit={handleSearchSubmit} className="flex-1 relative">
-          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
+          <Search className={cn("w-4 h-4 absolute top-1/2 -translate-y-1/2 text-text-muted", isRtl ? "right-3" : "left-3")} />
           <input
             type="text"
-            placeholder="Search by job title, company name, location..."
+            placeholder={t('opportunities.searchPlaceholder')}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full h-9 pl-9 pr-4 rounded-lg text-xs bg-bg-secondary border border-border text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-1 focus:ring-accent focus:border-accent"
+            className={cn(
+              "w-full h-9 rounded-lg text-xs bg-bg-secondary border border-border text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-1 focus:ring-accent focus:border-accent",
+              isRtl ? "pr-9 pl-4" : "pl-9 pr-4"
+            )}
           />
         </form>
 
@@ -234,16 +240,16 @@ export function OpportunityList({
             onChange={handleStatusChange}
             className="h-9 px-3 rounded-lg text-xs bg-bg-secondary border border-border text-text-primary focus:outline-none focus:ring-1 focus:ring-accent"
           >
-            <option value="">All Statuses</option>
-            <option value="SAVED">Saved</option>
-            <option value="TO_REVIEW">To Review</option>
-            <option value="READY_TO_APPLY">Ready to Apply</option>
-            <option value="APPLIED">Applied</option>
-            <option value="ASSESSMENT">Assessment</option>
-            <option value="INTERVIEW">Interview</option>
-            <option value="OFFER">Offer</option>
-            <option value="REJECTED">Rejected</option>
-            <option value="CLOSED">Closed</option>
+            <option value="">{t('opportunities.allStages')}</option>
+            <option value="SAVED">{t('opportunities.stages.SAVED')}</option>
+            <option value="TO_REVIEW">{t('opportunities.stages.TO_REVIEW')}</option>
+            <option value="READY_TO_APPLY">{t('opportunities.stages.READY_TO_APPLY')}</option>
+            <option value="APPLIED">{t('opportunities.stages.APPLIED')}</option>
+            <option value="ASSESSMENT">{t('opportunities.stages.ASSESSMENT')}</option>
+            <option value="INTERVIEW">{t('opportunities.stages.INTERVIEW')}</option>
+            <option value="OFFER">{t('opportunities.stages.OFFER')}</option>
+            <option value="REJECTED">{t('opportunities.stages.REJECTED')}</option>
+            <option value="CLOSED">{t('opportunities.stages.CLOSED')}</option>
           </select>
 
           <select
@@ -251,11 +257,11 @@ export function OpportunityList({
             onChange={handlePriorityChange}
             className="h-9 px-3 rounded-lg text-xs bg-bg-secondary border border-border text-text-primary focus:outline-none focus:ring-1 focus:ring-accent"
           >
-            <option value="">All Priorities</option>
-            <option value="LOW">Low</option>
-            <option value="MEDIUM">Medium</option>
-            <option value="HIGH">High</option>
-            <option value="URGENT">Urgent</option>
+            <option value="">{t('opportunities.allPriorities')}</option>
+            <option value="LOW">{isRtl ? 'منخفضة' : 'Low'}</option>
+            <option value="MEDIUM">{isRtl ? 'متوسطة' : 'Medium'}</option>
+            <option value="HIGH">{isRtl ? 'عالية' : 'High'}</option>
+            <option value="URGENT">{isRtl ? 'عاجلة' : 'Urgent'}</option>
           </select>
 
           <select
@@ -263,8 +269,8 @@ export function OpportunityList({
             onChange={handleSortChange}
             className="h-9 px-3 rounded-lg text-xs bg-bg-secondary border border-border text-text-primary focus:outline-none focus:ring-1 focus:ring-accent"
           >
-            <option value="createdAt">Newest First</option>
-            <option value="deadline">Upcoming Deadline</option>
+            <option value="createdAt">{t('companies.sortNewest')}</option>
+            <option value="deadline">{isRtl ? 'أقرب موعد نهائي' : 'Upcoming Deadline'}</option>
             <option value="dateApplied">Recent Application</option>
             <option value="title">Job Title</option>
             <option value="priority">Priority</option>
@@ -286,21 +292,21 @@ export function OpportunityList({
       {opportunities.length === 0 ? (
         <EmptyState
           icon={<Briefcase className="w-6 h-6" />}
-          title={hasFilters ? 'No matching opportunities' : 'No target opportunities yet'}
+          title={hasFilters ? t('common.noResults') : t('opportunities.emptyTitle')}
           description={
             hasFilters
-              ? 'Try adjusting your filters or search terms.'
-              : 'Add target job openings in Egypt or remote roles to track applications.'
+              ? isRtl ? 'لا توجد فرص تطابق الفلاتر المحددة.' : 'Try adjusting your filters or search terms.'
+              : t('opportunities.emptyDesc')
           }
           action={
             hasFilters ? (
               <Button size="sm" variant="outline" onClick={handleClearFilters}>
-                Clear Filters
+                {t('common.resetFilters')}
               </Button>
             ) : (
               <Button size="sm" onClick={() => setCreateDialogOpen(true)}>
-                <Plus className="w-4 h-4 mr-1.5" />
-                Add Your First Opportunity
+                <Plus className={cn("w-4 h-4", isRtl ? "ml-1.5" : "mr-1.5")} />
+                {t('opportunities.addFirst')}
               </Button>
             )
           }
@@ -315,16 +321,16 @@ export function OpportunityList({
         /* Table View */
         <div className="bg-bg-secondary border border-border rounded-xl overflow-hidden shadow-xs">
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
+            <table className={cn("w-full border-collapse", isRtl ? "text-right" : "text-left")}>
               <thead>
                 <tr className="border-b border-border bg-bg-tertiary/40 text-[11px] font-semibold text-text-secondary">
-                  <th className="py-3 px-4">Role & Company</th>
-                  <th className="py-3 px-3">Stage</th>
-                  <th className="py-3 px-3">Priority</th>
-                  <th className="py-3 px-3 hidden md:table-cell">Arrangement</th>
-                  <th className="py-3 px-3 hidden lg:table-cell">Tech Stack</th>
-                  <th className="py-3 px-3 hidden sm:table-cell">Dates</th>
-                  <th className="py-3 px-4 text-right">Actions</th>
+                  <th className="py-3 px-4">{isRtl ? 'المسمى والشركة' : 'Role & Company'}</th>
+                  <th className="py-3 px-3">{isRtl ? 'المرحلة' : 'Stage'}</th>
+                  <th className="py-3 px-3">{isRtl ? 'الأولوية' : 'Priority'}</th>
+                  <th className="py-3 px-3 hidden md:table-cell">{isRtl ? 'طبيعة العمل' : 'Arrangement'}</th>
+                  <th className="py-3 px-3 hidden lg:table-cell">{isRtl ? 'التقنيات' : 'Tech Stack'}</th>
+                  <th className="py-3 px-3 hidden sm:table-cell">{isRtl ? 'التواريخ' : 'Dates'}</th>
+                  <th className={cn("py-3 px-4", isRtl ? "text-left" : "text-right")}>{isRtl ? 'الإجراءات' : 'Actions'}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border text-xs">

@@ -2,6 +2,8 @@ import { requireAuth } from '@/src/server/auth'
 import { getOrCreateSettings } from '@/src/server/data/settings'
 import { SettingsForm, type SettingsData } from '@/src/components/settings/settings-form'
 
+export const instant = false
+
 export default async function SettingsPage() {
   const session = await requireAuth()
   const userId = session.user!.id!

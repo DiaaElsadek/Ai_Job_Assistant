@@ -28,6 +28,8 @@ import {
   markDraftSentAction,
 } from '@/src/server/actions/messages'
 import { DeleteDraftDialog } from './delete-draft-dialog'
+import { useI18n } from '@/src/lib/i18n'
+import { cn } from '@/src/lib/utils'
 import type { MessageGoal, MessageLanguage, MessageTone, MessageStatus } from '@prisma/client'
 
 export interface DraftItem {
@@ -93,6 +95,7 @@ export function MessageStudioClient({
   initialOpportunityId = '',
 }: MessageStudioClientProps) {
   const router = useRouter()
+  const { t, isRtl } = useI18n()
   const [isGenerating, startGenerateTransition] = useTransition()
   const [isSaving, startSaveTransition] = useTransition()
 
@@ -206,7 +209,7 @@ export function MessageStudioClient({
   const wordCount = currentContent.trim() ? currentContent.trim().split(/\s+/).length : 0
 
   const contactOptions = [
-    { value: '', label: 'None (Generic Candidate Outreach)' },
+    { value: '', label: isRtl ? 'بدون (رسالة عامة بدون ربط)' : 'None (Generic Candidate Outreach)' },
     ...contacts.map((c) => ({
       value: c.id,
       label: `${c.fullName} ${c.companyName ? `(${c.companyName})` : ''}`,
@@ -214,7 +217,7 @@ export function MessageStudioClient({
   ]
 
   const opportunityOptions = [
-    { value: '', label: 'None (General Networking)' },
+    { value: '', label: isRtl ? 'بدون (تواصل عام)' : 'None (General Networking)' },
     ...opportunities.map((o) => ({
       value: o.id,
       label: `${o.title} ${o.companyName ? `@ ${o.companyName}` : ''}`,
@@ -226,10 +229,10 @@ export function MessageStudioClient({
       {/* Top Banner */}
       <div>
         <h1 className="text-xl font-bold text-text-primary tracking-tight">
-          AI Message Studio
+          {t('messages.title')}
         </h1>
         <p className="text-xs text-text-secondary mt-1">
-          Craft high-converting, personalized outreach in Egyptian Arabic or English tailored to tech roles and recruiters.
+          {t('messages.subtitle')}
         </p>
       </div>
 
@@ -240,7 +243,7 @@ export function MessageStudioClient({
           <div className="flex items-center gap-2 pb-3 border-b border-border">
             <Sparkles className="w-4 h-4 text-accent" />
             <h2 className="text-xs font-semibold text-text-primary uppercase tracking-wider">
-              Outreach Parameters
+              {isRtl ? 'معايير رسالة التواصل' : 'Outreach Parameters'}
             </h2>
           </div>
 
@@ -304,8 +307,8 @@ export function MessageStudioClient({
               disabled={isGenerating}
               onClick={handleGenerate}
             >
-              <Sparkles className="w-4 h-4 mr-1.5" />
-              Generate Outreach with AI
+              <Sparkles className={cn("w-4 h-4", isRtl ? "ml-1.5" : "mr-1.5")} />
+              {isGenerating ? t('messages.generatingBtn') : t('messages.generateBtn')}
             </Button>
           </div>
         </div>
@@ -316,13 +319,13 @@ export function MessageStudioClient({
             <div className="flex items-center gap-2">
               <MessageSquare className="w-4 h-4 text-accent" />
               <h2 className="text-xs font-semibold text-text-primary uppercase tracking-wider">
-                {currentDraftId ? 'Edit Saved Draft' : 'Generated Message'}
+                {currentDraftId ? (isRtl ? 'تعديل المسودة المحفوظة' : 'Edit Saved Draft') : t('messages.editorTitle')}
               </h2>
             </div>
 
             <div className="flex items-center gap-2 text-xs">
               <span className="text-text-muted font-mono text-[11px]">
-                {charCount} chars • {wordCount} words
+                {charCount} {t('messages.charCount')} • {wordCount} {isRtl ? 'كلمة' : 'words'}
               </span>
             </div>
           </div>
@@ -356,13 +359,13 @@ export function MessageStudioClient({
             >
               {copied ? (
                 <>
-                  <Check className="w-3.5 h-3.5 mr-1 text-success" />
-                  Copied!
+                  <Check className={cn("w-3.5 h-3.5 text-success", isRtl ? "ml-1" : "mr-1")} />
+                  {t('messages.copied')}
                 </>
               ) : (
                 <>
-                  <Copy className="w-3.5 h-3.5 mr-1" />
-                  Copy to Clipboard
+                  <Copy className={cn("w-3.5 h-3.5", isRtl ? "ml-1" : "mr-1")} />
+                  {t('messages.copy')}
                 </>
               )}
             </Button>
@@ -377,8 +380,8 @@ export function MessageStudioClient({
                   disabled={isSaving}
                   onClick={handleMarkSent}
                 >
-                  <Send className="w-3.5 h-3.5 mr-1 text-success" />
-                  Mark as Sent
+                  <Send className={cn("w-3.5 h-3.5 text-success", isRtl ? "ml-1" : "mr-1")} />
+                  {t('messages.markSent')}
                 </Button>
               )}
 
@@ -389,8 +392,8 @@ export function MessageStudioClient({
                 disabled={isSaving || !currentContent}
                 onClick={handleSaveDraft}
               >
-                <Save className="w-3.5 h-3.5 mr-1" />
-                {currentDraftId ? 'Update Draft' : 'Save as Draft'}
+                <Save className={cn("w-3.5 h-3.5", isRtl ? "ml-1" : "mr-1")} />
+                {currentDraftId ? (isRtl ? 'تحديث المسودة' : 'Update Draft') : t('messages.saveDraft')}
               </Button>
             </div>
           </div>
@@ -403,7 +406,7 @@ export function MessageStudioClient({
           <div className="flex items-center gap-2">
             <History className="w-4 h-4 text-text-muted" />
             <h2 className="text-xs font-semibold text-text-primary uppercase tracking-wider">
-              Saved Drafts & Outreach History ({drafts.length})
+              {t('messages.savedDrafts')} ({drafts.length})
             </h2>
           </div>
         </div>

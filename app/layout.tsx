@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
 import './globals.css'
 import { ThemeProvider } from '@/src/components/theme-provider'
+import { I18nProvider } from '@/src/lib/i18n'
 import { Toaster } from 'sonner'
 
 const geistSans = Geist({
@@ -33,13 +34,15 @@ export default function RootLayout({
     >
       <body className="min-h-screen bg-bg-primary text-text-primary antialiased font-sans">
         <ThemeProvider>
-          {children}
-          <Toaster
-            position="bottom-right"
-            toastOptions={{
-              className: 'bg-bg-secondary text-text-primary border border-border shadow-lg text-sm',
-            }}
-          />
+          <I18nProvider>
+            {children}
+            <Toaster
+              position="bottom-right"
+              toastOptions={{
+                className: 'bg-bg-secondary text-text-primary border border-border shadow-lg text-sm',
+              }}
+            />
+          </I18nProvider>
         </ThemeProvider>
       </body>
     </html>

@@ -3,14 +3,17 @@
 import { useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { signIn } from 'next-auth/react'
-import { Zap, ShieldCheck, AlertCircle, ArrowRight } from 'lucide-react'
+import { Zap, ShieldCheck, AlertCircle, ArrowRight, Languages } from 'lucide-react'
 import { Button } from '@/src/components/ui/button'
 import { Input } from '@/src/components/ui/input'
+import { useI18n } from '@/src/lib/i18n'
+import { cn } from '@/src/lib/utils'
 
 function LoginForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const callbackUrl = searchParams.get('callbackUrl') || '/'
+  const { t, isRtl } = useI18n()
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -22,7 +25,7 @@ function LoginForm() {
     setError(null)
 
     if (!email || !password) {
-      setError('Please fill in both email and password.')
+      setError(t('auth.invalidCredentials'))
       return
     }
 
@@ -36,7 +39,7 @@ function LoginForm() {
       })
 
       if (res?.error) {
-        setError('Invalid owner email or password.')
+        setError(t('auth.invalidCredentials'))
         setLoading(false)
         return
       }
@@ -44,7 +47,7 @@ function LoginForm() {
       router.push(callbackUrl)
       router.refresh()
     } catch {
-      setError('An unexpected error occurred. Please try again.')
+      setError(t('auth.invalidCredentials'))
       setLoading(false)
     }
   }
@@ -54,7 +57,7 @@ function LoginForm() {
       <div className="flex items-center gap-2 pb-3 border-b border-border">
         <ShieldCheck className="w-4 h-4 text-accent" />
         <span className="text-xs font-medium text-text-primary">
-          Single-Owner Access
+          {t('auth.singleOwnerAccess')}
         </span>
       </div>
 
@@ -72,7 +75,7 @@ function LoginForm() {
         <Input
           id="login-email"
           type="email"
-          label="Owner Email"
+          label={t('auth.ownerEmail')}
           placeholder="owner@example.com"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
@@ -82,8 +85,8 @@ function LoginForm() {
 
         <Input
           id="login-password"
-          type="text"
-          label="Password"
+          type="password"
+          label={t('auth.password')}
           placeholder="••••••••"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
@@ -98,8 +101,8 @@ function LoginForm() {
           loading={loading}
           disabled={loading}
         >
-          Sign In
-          <ArrowRight className="w-4 h-4 ml-1" />
+          {loading ? t('auth.signingIn') : t('auth.signInBtn')}
+          <ArrowRight className={cn('w-4 h-4 ml-1', isRtl && 'mr-1 ml-0 scale-x-[-1]')} />
         </Button>
       </form>
     </div>
@@ -131,8 +134,21 @@ function LoginFormFallback() {
 }
 
 export default function LoginPage() {
+  const { locale, toggleLocale, t } = useI18n()
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-bg-primary px-4 py-12">
+    <div className="min-h-screen flex items-center justify-center bg-bg-primary px-4 py-12 relative">
+      {/* Top right language toggle */}
+      <div className="absolute top-4 end-4">
+        <button
+          onClick={toggleLocale}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-text-secondary hover:bg-bg-secondary hover:text-text-primary border border-border shadow-xs transition-colors"
+        >
+          <Languages className="w-3.5 h-3.5 text-accent" />
+          <span>{locale === 'en' ? 'العربية' : 'English'}</span>
+        </button>
+      </div>
+
       <div className="w-full max-w-sm space-y-6">
         {/* Brand */}
         <div className="text-center space-y-2">
@@ -140,10 +156,10 @@ export default function LoginPage() {
             <Zap className="w-6 h-6" />
           </div>
           <h1 className="text-xl font-semibold text-text-primary tracking-tight">
-            JobFlow AI
+            {t('auth.title')}
           </h1>
           <p className="text-xs text-text-secondary">
-            Personal job-search and networking dashboard
+            {t('auth.subtitle')}
           </p>
         </div>
 
@@ -153,10 +169,9 @@ export default function LoginPage() {
         </Suspense>
 
         <p className="text-center text-[11px] text-text-muted">
-          Protected single-user personal dashboard. Auth credentials configured via environment variables.
+          {t('auth.footerNote')}
         </p>
       </div>
     </div>
   )
 }
-

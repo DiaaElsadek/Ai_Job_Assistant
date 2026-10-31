@@ -17,42 +17,52 @@ import {
   Zap,
 } from 'lucide-react'
 import { cn } from '@/src/lib/utils'
-
-const navItems = [
-  { href: '/', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/opportunities', label: 'Opportunities', icon: Briefcase },
-  { href: '/companies', label: 'Companies', icon: Building2 },
-  { href: '/contacts', label: 'Contacts', icon: Users },
-  { href: '/messages', label: 'Message Studio', icon: MessageSquare },
-  { href: '/follow-ups', label: 'Follow-ups', icon: Bell },
-  { href: '/analytics', label: 'Analytics', icon: BarChart3 },
-  { href: '/settings', label: 'Settings', icon: Settings },
-]
+import { useI18n } from '@/src/lib/i18n'
 
 export function Sidebar() {
   const pathname = usePathname()
   const [collapsed, setCollapsed] = useState(false)
+  const { t, isRtl } = useI18n()
+
+  const navItems = [
+    { href: '/', label: t('nav.dashboard'), icon: LayoutDashboard },
+    { href: '/opportunities', label: t('nav.opportunities'), icon: Briefcase },
+    { href: '/companies', label: t('nav.companies'), icon: Building2 },
+    { href: '/contacts', label: t('nav.contacts'), icon: Users },
+    { href: '/messages', label: t('nav.messages'), icon: MessageSquare },
+    { href: '/follow-ups', label: t('nav.followUps'), icon: Bell },
+    { href: '/analytics', label: t('nav.analytics'), icon: BarChart3 },
+    { href: '/settings', label: t('nav.settings'), icon: Settings },
+  ]
+
+  const CollapseIcon = isRtl
+    ? collapsed
+      ? ChevronLeft
+      : ChevronRight
+    : collapsed
+    ? ChevronRight
+    : ChevronLeft
 
   return (
     <>
       {/* Mobile overlay */}
       <aside
         className={cn(
-          'fixed left-0 top-0 z-40 h-full flex flex-col border-r border-border transition-all duration-200',
+          'fixed top-0 z-40 h-full flex flex-col transition-all duration-200',
+          isRtl ? 'right-0 border-l border-border' : 'left-0 border-r border-border',
           'bg-sidebar-bg',
           collapsed ? 'w-14' : 'w-60',
-          // On mobile, hide collapsed sidebar behind a toggle
           'max-md:hidden'
         )}
       >
         {/* Logo */}
         <div className="flex items-center gap-2 border-b border-border px-3 h-12 shrink-0">
-          <div className="flex items-center justify-center w-8 h-8 rounded-md bg-accent text-black">
+          <div className="flex items-center justify-center w-8 h-8 rounded-md bg-accent text-black shrink-0">
             <Zap className="w-4 h-4" />
           </div>
           {!collapsed && (
             <span className="font-semibold text-text-primary text-[15px] tracking-tight">
-              JobFlow AI
+              {t('common.appName')}
             </span>
           )}
         </div>
@@ -91,13 +101,10 @@ export function Sidebar() {
           <button
             onClick={() => setCollapsed(!collapsed)}
             className="flex items-center justify-center w-full py-1.5 rounded-md text-text-tertiary hover:bg-sidebar-hover hover:text-text-primary transition-colors"
-            aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            aria-label={collapsed ? t('nav.expandSidebar') : t('nav.collapseSidebar')}
+            title={collapsed ? t('nav.expandSidebar') : t('nav.collapseSidebar')}
           >
-            {collapsed ? (
-              <ChevronRight className="w-4 h-4" />
-            ) : (
-              <ChevronLeft className="w-4 h-4" />
-            )}
+            <CollapseIcon className="w-4 h-4" />
           </button>
         </div>
       </aside>

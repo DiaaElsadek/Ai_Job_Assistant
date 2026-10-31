@@ -2,6 +2,8 @@ import { requireAuth } from '@/src/server/auth'
 import { listCompanies } from '@/src/server/data/companies'
 import { CompanyList, type CompanyItem } from '@/src/components/companies/company-list'
 
+export const instant = false
+
 interface CompaniesPageProps {
   searchParams: Promise<{
     search?: string

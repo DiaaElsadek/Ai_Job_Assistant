@@ -19,6 +19,8 @@ import { listCompaniesForSelect } from '@/src/server/data/companies'
 import { Badge, StatusBadge } from '@/src/components/ui/badge'
 import { ContactDetailActions } from '@/src/components/contacts/contact-detail-actions'
 
+export const instant = false
+
 interface ContactDetailPageProps {
   params: Promise<{ id: string }>
 }

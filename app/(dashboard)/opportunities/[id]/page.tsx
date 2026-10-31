@@ -19,6 +19,8 @@ import { listCompaniesForSelect } from '@/src/server/data/companies'
 import { Badge, StatusBadge } from '@/src/components/ui/badge'
 import { OpportunityDetailActions } from '@/src/components/opportunities/opportunity-detail-actions'
 
+export const instant = false
+
 interface OpportunityDetailPageProps {
   params: Promise<{ id: string }>
 }

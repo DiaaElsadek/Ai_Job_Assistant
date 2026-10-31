@@ -18,6 +18,8 @@ import { Badge, StatusBadge } from '@/src/components/ui/badge'
 import { EmptyState } from '@/src/components/ui/empty-state'
 import { CompanyDetailActions } from '@/src/components/companies/company-detail-actions'
 
+export const instant = false
+
 interface CompanyDetailPageProps {
   params: Promise<{ id: string }>
 }

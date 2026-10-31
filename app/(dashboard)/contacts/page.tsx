@@ -3,6 +3,8 @@ import { listContacts } from '@/src/server/data/contacts'
 import { listCompaniesForSelect } from '@/src/server/data/companies'
 import { ContactList, type ContactItem } from '@/src/components/contacts/contact-list'
 
+export const instant = false
+
 interface ContactsPageProps {
   searchParams: Promise<{
     search?: string

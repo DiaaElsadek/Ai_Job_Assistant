@@ -21,6 +21,8 @@ import { Badge, StatusBadge } from '@/src/components/ui/badge'
 import { EmptyState } from '@/src/components/ui/empty-state'
 import { CompanyDialog, type CompanyFormDataInput } from './company-dialog'
 import { DeleteCompanyDialog } from './delete-company-dialog'
+import { useI18n } from '@/src/lib/i18n'
+import { cn } from '@/src/lib/utils'
 
 export interface CompanyItem {
   id: string
@@ -62,6 +64,7 @@ export function CompanyList({
 }: CompanyListProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const { t, isRtl } = useI18n()
 
   const [createDialogOpen, setCreateDialogOpen] = useState(false)
   const [editingCompany, setEditingCompany] = useState<CompanyFormDataInput | null>(null)
@@ -122,10 +125,10 @@ export function CompanyList({
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <h2 className="text-lg font-semibold text-text-primary tracking-tight">
-            Target Companies
+            {t('companies.title')}
           </h2>
           <p className="text-xs text-text-secondary mt-0.5">
-            Research companies, track verified tech stacks, and discover hiring opportunities.
+            {t('companies.subtitle')}
           </p>
         </div>
         <Button
@@ -133,8 +136,8 @@ export function CompanyList({
           size="sm"
           className="self-start sm:self-auto shrink-0 shadow-sm"
         >
-          <Plus className="w-3.5 h-3.5 mr-1" />
-          Add Company
+          <Plus className={cn("w-3.5 h-3.5", isRtl ? "ml-1" : "mr-1")} />
+          {t('companies.addCompany')}
         </Button>
       </div>
 
@@ -143,13 +146,16 @@ export function CompanyList({
         <div className="grid grid-cols-1 sm:grid-cols-12 gap-2.5">
           {/* Search */}
           <form onSubmit={handleSearchSubmit} className="sm:col-span-6 relative">
-            <Search className="w-3.5 h-3.5 text-text-muted absolute left-2.5 top-1/2 -translate-y-1/2" />
+            <Search className={cn("w-3.5 h-3.5 text-text-muted absolute top-1/2 -translate-y-1/2", isRtl ? "right-2.5" : "left-2.5")} />
             <input
               type="text"
-              placeholder="Search by company name, industry, location..."
+              placeholder={t('companies.searchPlaceholder')}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full h-8 pl-8 pr-3 text-xs bg-bg-primary border border-border rounded-md text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-1 focus:ring-accent focus:border-accent"
+              className={cn(
+                "w-full h-8 text-xs bg-bg-primary border border-border rounded-md text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-1 focus:ring-accent focus:border-accent",
+                isRtl ? "pr-8 pl-3" : "pl-8 pr-3"
+              )}
             />
           </form>
 
@@ -161,11 +167,11 @@ export function CompanyList({
               className="w-full h-8 px-2.5 text-xs bg-bg-primary border border-border rounded-md text-text-primary focus:outline-none focus:ring-1 focus:ring-accent focus:border-accent"
               aria-label="Filter by priority"
             >
-              <option value="">All Priorities</option>
-              <option value="URGENT">Urgent</option>
-              <option value="HIGH">High</option>
-              <option value="MEDIUM">Medium</option>
-              <option value="LOW">Low</option>
+              <option value="">{t('companies.allPriorities')}</option>
+              <option value="URGENT">{isRtl ? 'عاجلة' : 'Urgent'}</option>
+              <option value="HIGH">{isRtl ? 'عالية' : 'High'}</option>
+              <option value="MEDIUM">{isRtl ? 'متوسطة' : 'Medium'}</option>
+              <option value="LOW">{isRtl ? 'منخفضة' : 'Low'}</option>
             </select>
           </div>
 
@@ -177,10 +183,10 @@ export function CompanyList({
               className="w-full h-8 px-2.5 text-xs bg-bg-primary border border-border rounded-md text-text-primary focus:outline-none focus:ring-1 focus:ring-accent focus:border-accent"
               aria-label="Sort companies"
             >
-              <option value="createdAt">Newest First</option>
-              <option value="name">Name (A-Z)</option>
-              <option value="priority">Priority</option>
-              <option value="lastResearchedAt">Last Researched</option>
+              <option value="createdAt">{t('companies.sortNewest')}</option>
+              <option value="name">{t('companies.sortName')}</option>
+              <option value="priority">{t('companies.sortPriority')}</option>
+              <option value="lastResearchedAt">{t('companies.sortResearched')}</option>
             </select>
           </div>
         </div>
@@ -204,21 +210,21 @@ export function CompanyList({
       {companies.length === 0 ? (
         <EmptyState
           icon={<Building2 className="w-6 h-6 text-text-muted" />}
-          title={hasFilters ? 'No companies found' : 'No target companies yet'}
+          title={hasFilters ? t('common.noResults') : t('companies.emptyTitle')}
           description={
             hasFilters
-              ? 'Try modifying your search or priority filter.'
-              : 'Add target companies in Egypt or remote to start mapping out opportunities and networking contacts.'
+              ? isRtl ? 'لا توجد شركات تطابق معايير التصفية.' : 'Try modifying your search or priority filter.'
+              : t('companies.emptyDesc')
           }
           action={
             hasFilters ? (
               <Button variant="outline" size="sm" onClick={clearFilters}>
-                Clear Filters
+                {t('common.resetFilters')}
               </Button>
             ) : (
               <Button size="sm" onClick={() => setCreateDialogOpen(true)}>
-                <Plus className="w-3.5 h-3.5 mr-1" />
-                Add Your First Company
+                <Plus className={cn("w-3.5 h-3.5", isRtl ? "ml-1" : "mr-1")} />
+                {t('companies.addFirst')}
               </Button>
             )
           }
@@ -226,16 +232,16 @@ export function CompanyList({
       ) : (
         <div className="bg-bg-secondary border border-border rounded-lg overflow-hidden shadow-sm">
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse text-xs">
+            <table className={cn("w-full border-collapse text-xs", isRtl ? "text-right" : "text-left")}>
               <thead>
                 <tr className="border-b border-border bg-bg-tertiary/50 text-text-secondary font-medium">
-                  <th className="py-2.5 px-3">Company</th>
-                  <th className="py-2.5 px-3">Location & Industry</th>
-                  <th className="py-2.5 px-3 hidden md:table-cell">Tech Stack</th>
-                  <th className="py-2.5 px-3">Priority</th>
-                  <th className="py-2.5 px-3 text-center">Pipeline</th>
-                  <th className="py-2.5 px-3 hidden lg:table-cell">Last Researched</th>
-                  <th className="py-2.5 px-3 text-right">Actions</th>
+                  <th className="py-2.5 px-3">{isRtl ? 'الشركة' : 'Company'}</th>
+                  <th className="py-2.5 px-3">{isRtl ? 'المقر والمجال' : 'Location & Industry'}</th>
+                  <th className="py-2.5 px-3 hidden md:table-cell">{isRtl ? 'حزمة التقنيات' : 'Tech Stack'}</th>
+                  <th className="py-2.5 px-3">{isRtl ? 'الأولوية' : 'Priority'}</th>
+                  <th className="py-2.5 px-3 text-center">{isRtl ? 'المسار' : 'Pipeline'}</th>
+                  <th className="py-2.5 px-3 hidden lg:table-cell">{isRtl ? 'آخر بحث' : 'Last Researched'}</th>
+                  <th className={cn("py-2.5 px-3", isRtl ? "text-left" : "text-right")}>{isRtl ? 'الإجراءات' : 'Actions'}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">

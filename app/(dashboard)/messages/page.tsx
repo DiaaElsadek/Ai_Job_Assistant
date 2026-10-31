@@ -4,6 +4,8 @@ import { listContactsForSelect } from '@/src/server/data/contacts'
 import { listOpportunitiesForSelect } from '@/src/server/data/opportunities'
 import { MessageStudioClient, type DraftItem } from '@/src/components/messages/message-studio-client'
 
+export const instant = false
+
 interface MessagesPageProps {
   searchParams: Promise<{
     contactId?: string

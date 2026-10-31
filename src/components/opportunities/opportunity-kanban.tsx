@@ -19,6 +19,7 @@ import { Button } from '@/src/components/ui/button'
 import type { OpportunityItem } from './opportunity-list'
 import { updateOpportunityStatusAction } from '@/src/server/actions/opportunities'
 import type { OpportunityStatus } from '@prisma/client'
+import { useI18n } from '@/src/lib/i18n'
 
 interface OpportunityKanbanProps {
   opportunities: OpportunityItem[]
@@ -33,46 +34,47 @@ interface ColumnDef {
   badgeVariant: 'muted' | 'info' | 'accent' | 'warning' | 'success' | 'error'
 }
 
-const COLUMNS: ColumnDef[] = [
-  {
-    key: 'saved',
-    label: 'Saved & To Review',
-    statuses: ['SAVED', 'TO_REVIEW', 'READY_TO_APPLY'],
-    badgeVariant: 'muted',
-  },
-  {
-    key: 'applied',
-    label: 'Applied',
-    statuses: ['APPLIED'],
-    badgeVariant: 'info',
-  },
-  {
-    key: 'interview',
-    label: 'Assessment & Interview',
-    statuses: ['ASSESSMENT', 'INTERVIEW'],
-    badgeVariant: 'warning',
-  },
-  {
-    key: 'offer',
-    label: 'Offer',
-    statuses: ['OFFER'],
-    badgeVariant: 'success',
-  },
-  {
-    key: 'closed',
-    label: 'Rejected / Closed',
-    statuses: ['REJECTED', 'CLOSED'],
-    badgeVariant: 'error',
-  },
-]
-
 export function OpportunityKanban({
   opportunities,
   onEdit,
   onDelete,
 }: OpportunityKanbanProps) {
   const router = useRouter()
+  const { isRtl } = useI18n()
   const [isPending, startTransition] = useTransition()
+
+  const columns: ColumnDef[] = [
+    {
+      key: 'saved',
+      label: isRtl ? 'محفوظة وقيد المراجعة' : 'Saved & To Review',
+      statuses: ['SAVED', 'TO_REVIEW', 'READY_TO_APPLY'],
+      badgeVariant: 'muted',
+    },
+    {
+      key: 'applied',
+      label: isRtl ? 'تم التقديم' : 'Applied',
+      statuses: ['APPLIED'],
+      badgeVariant: 'info',
+    },
+    {
+      key: 'interview',
+      label: isRtl ? 'اختبارات ومقابلات' : 'Assessment & Interview',
+      statuses: ['ASSESSMENT', 'INTERVIEW'],
+      badgeVariant: 'warning',
+    },
+    {
+      key: 'offer',
+      label: isRtl ? 'عروض العمل' : 'Offer',
+      statuses: ['OFFER'],
+      badgeVariant: 'success',
+    },
+    {
+      key: 'closed',
+      label: isRtl ? 'مرفوضة ومغلقة' : 'Rejected / Closed',
+      statuses: ['REJECTED', 'CLOSED'],
+      badgeVariant: 'error',
+    },
+  ]
 
   const handleQuickStatus = (id: string, newStatus: OpportunityStatus) => {
     startTransition(async () => {
@@ -88,7 +90,7 @@ export function OpportunityKanban({
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 overflow-x-auto pb-4">
-      {COLUMNS.map((col) => {
+      {columns.map((col) => {
         const colOpps = opportunities.filter((o) =>
           col.statuses.includes(o.status as OpportunityStatus)
         )
@@ -110,7 +112,7 @@ export function OpportunityKanban({
             <div className="space-y-2.5 flex-1 overflow-y-auto max-h-[calc(100vh-280px)]">
               {colOpps.length === 0 ? (
                 <div className="py-8 text-center text-xs text-text-muted">
-                  No roles in this stage
+                  {isRtl ? 'لا توجد وظائف في هذه المرحلة' : 'No roles in this stage'}
                 </div>
               ) : (
                 colOpps.map((opp) => (

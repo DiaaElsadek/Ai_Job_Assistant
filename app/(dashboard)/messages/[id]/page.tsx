@@ -16,6 +16,8 @@ import { getMessageDraft } from '@/src/server/data/messages'
 import { Badge, StatusBadge } from '@/src/components/ui/badge'
 import { Button } from '@/src/components/ui/button'
 
+export const instant = false
+
 interface MessageDetailPageProps {
   params: Promise<{ id: string }>
 }

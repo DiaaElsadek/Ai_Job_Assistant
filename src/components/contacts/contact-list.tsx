@@ -22,6 +22,8 @@ import { EmptyState } from '@/src/components/ui/empty-state'
 import { ContactDialog, type ContactFormDataInput } from './contact-dialog'
 import { DeleteContactDialog } from './delete-contact-dialog'
 import { LogTouchpointDialog } from './log-touchpoint-dialog'
+import { useI18n } from '@/src/lib/i18n'
+import { cn } from '@/src/lib/utils'
 
 export interface ContactItem {
   id: string
@@ -79,6 +81,7 @@ export function ContactList({
 }: ContactListProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const { t, isRtl } = useI18n()
 
   const [createDialogOpen, setCreateDialogOpen] = useState(false)
   const [editingContact, setEditingContact] = useState<ContactFormDataInput | null>(null)
@@ -146,29 +149,32 @@ export function ContactList({
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-xl font-bold text-text-primary tracking-tight">
-            Networking Contacts
+            {t('contacts.title')}
           </h1>
           <p className="text-xs text-text-secondary mt-1">
-            Build personal connections with recruiters, tech leads, and referral targets in Egypt and remote.
+            {t('contacts.subtitle')}
           </p>
         </div>
 
         <Button size="sm" onClick={() => setCreateDialogOpen(true)}>
-          <Plus className="w-4 h-4 mr-1.5" />
-          Add Contact
+          <Plus className={cn("w-4 h-4", isRtl ? "ml-1.5" : "mr-1.5")} />
+          {t('contacts.addContact')}
         </Button>
       </div>
 
       {/* Filters Bar */}
       <div className="flex flex-col md:flex-row gap-3">
         <form onSubmit={handleSearchSubmit} className="flex-1 relative">
-          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
+          <Search className={cn("w-4 h-4 absolute top-1/2 -translate-y-1/2 text-text-muted", isRtl ? "right-3" : "left-3")} />
           <input
             type="text"
-            placeholder="Search by name, role, company, location..."
+            placeholder={t('contacts.searchPlaceholder')}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full h-9 pl-9 pr-4 rounded-lg text-xs bg-bg-secondary border border-border text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-1 focus:ring-accent focus:border-accent"
+            className={cn(
+              "w-full h-9 rounded-lg text-xs bg-bg-secondary border border-border text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-1 focus:ring-accent focus:border-accent",
+              isRtl ? "pr-9 pl-4" : "pl-9 pr-4"
+            )}
           />
         </form>
 
@@ -181,13 +187,13 @@ export function ContactList({
             }}
             className="h-9 px-3 rounded-lg text-xs bg-bg-secondary border border-border text-text-primary focus:outline-none focus:ring-1 focus:ring-accent"
           >
-            <option value="">All Categories</option>
-            <option value="RECRUITER">Tech Recruiter</option>
-            <option value="HR">HR / Talent</option>
-            <option value="SENIOR_FRONTEND_DEV">Senior Frontend Dev</option>
-            <option value="TECH_LEAD">Tech Lead</option>
-            <option value="ENGINEERING_MANAGER">Eng Manager</option>
-            <option value="OTHER">Other</option>
+            <option value="">{t('contacts.allCategories')}</option>
+            <option value="RECRUITER">{isRtl ? 'مسؤول توظيف' : 'Tech Recruiter'}</option>
+            <option value="HR">{isRtl ? 'موارد بشرية' : 'HR / Talent'}</option>
+            <option value="SENIOR_FRONTEND_DEV">{isRtl ? 'مطور واجهات أول' : 'Senior Frontend Dev'}</option>
+            <option value="TECH_LEAD">{isRtl ? 'قائد تقني' : 'Tech Lead'}</option>
+            <option value="ENGINEERING_MANAGER">{isRtl ? 'مدير هندسي' : 'Eng Manager'}</option>
+            <option value="OTHER">{isRtl ? 'أخرى' : 'Other'}</option>
           </select>
 
           <select
@@ -198,16 +204,16 @@ export function ContactList({
             }}
             className="h-9 px-3 rounded-lg text-xs bg-bg-secondary border border-border text-text-primary focus:outline-none focus:ring-1 focus:ring-accent"
           >
-            <option value="">All Relationship Stages</option>
-            <option value="TO_RESEARCH">To Research</option>
-            <option value="READY_FOR_OUTREACH">Ready for Outreach</option>
-            <option value="REQUEST_SENT">Request Sent</option>
-            <option value="CONNECTED">Connected</option>
-            <option value="MESSAGE_SENT">Message Sent</option>
-            <option value="REPLIED">Replied</option>
-            <option value="REFERRAL_DISCUSSED">Referral Discussed</option>
-            <option value="FOLLOW_UP_NEEDED">Follow-up Needed</option>
-            <option value="ARCHIVED">Archived</option>
+            <option value="">{t('contacts.allStages')}</option>
+            <option value="TO_RESEARCH">{t('contacts.stages.TO_RESEARCH')}</option>
+            <option value="READY_FOR_OUTREACH">{t('contacts.stages.READY_FOR_OUTREACH')}</option>
+            <option value="REQUEST_SENT">{t('contacts.stages.REQUEST_SENT')}</option>
+            <option value="CONNECTED">{t('contacts.stages.CONNECTED')}</option>
+            <option value="MESSAGE_SENT">{t('contacts.stages.MESSAGE_SENT')}</option>
+            <option value="REPLIED">{t('contacts.stages.REPLIED')}</option>
+            <option value="REFERRAL_DISCUSSED">{t('contacts.stages.REFERRAL_DISCUSSED')}</option>
+            <option value="CALL_SCHEDULED">{t('contacts.stages.CALL_SCHEDULED')}</option>
+            <option value="COLD">{t('contacts.stages.COLD')}</option>
           </select>
 
           <select
@@ -218,11 +224,11 @@ export function ContactList({
             }}
             className="h-9 px-3 rounded-lg text-xs bg-bg-secondary border border-border text-text-primary focus:outline-none focus:ring-1 focus:ring-accent"
           >
-            <option value="">All Priorities</option>
-            <option value="LOW">Low</option>
-            <option value="MEDIUM">Medium</option>
-            <option value="HIGH">High</option>
-            <option value="URGENT">Urgent</option>
+            <option value="">{t('contacts.allPriorities')}</option>
+            <option value="LOW">{isRtl ? 'منخفضة' : 'Low'}</option>
+            <option value="MEDIUM">{isRtl ? 'متوسطة' : 'Medium'}</option>
+            <option value="HIGH">{isRtl ? 'عالية' : 'High'}</option>
+            <option value="URGENT">{isRtl ? 'عاجلة' : 'Urgent'}</option>
           </select>
 
           <select
@@ -233,11 +239,11 @@ export function ContactList({
             }}
             className="h-9 px-3 rounded-lg text-xs bg-bg-secondary border border-border text-text-primary focus:outline-none focus:ring-1 focus:ring-accent"
           >
-            <option value="createdAt">Recently Added</option>
-            <option value="nextFollowUpDate">Next Follow-up</option>
-            <option value="lastContactDate">Last Contacted</option>
-            <option value="fullName">Name (A-Z)</option>
-            <option value="networkingPriority">Priority</option>
+            <option value="createdAt">{t('companies.sortNewest')}</option>
+            <option value="nextFollowUpDate">{isRtl ? 'المتابعة القادمة' : 'Next Follow-up'}</option>
+            <option value="lastContactDate">{isRtl ? 'آخر تواصل' : 'Last Contacted'}</option>
+            <option value="fullName">{t('companies.sortName')}</option>
+            <option value="networkingPriority">{t('companies.sortPriority')}</option>
           </select>
 
           {hasFilters && (
@@ -256,21 +262,21 @@ export function ContactList({
       {contacts.length === 0 ? (
         <EmptyState
           icon={<Users className="w-6 h-6" />}
-          title={hasFilters ? 'No matching contacts' : 'No networking contacts yet'}
+          title={hasFilters ? t('common.noResults') : t('contacts.emptyTitle')}
           description={
             hasFilters
-              ? 'Try clearing or relaxing your search filters.'
-              : 'Add recruiters, team leads, or engineers to track your outreach.'
+              ? isRtl ? 'لا توجد جهات اتصال تطابق الفلاتر المحددة.' : 'Try clearing or relaxing your search filters.'
+              : t('contacts.emptyDesc')
           }
           action={
             hasFilters ? (
               <Button size="sm" variant="outline" onClick={handleClearFilters}>
-                Clear Filters
+                {t('common.resetFilters')}
               </Button>
             ) : (
               <Button size="sm" onClick={() => setCreateDialogOpen(true)}>
-                <Plus className="w-4 h-4 mr-1.5" />
-                Add Your First Contact
+                <Plus className={cn("w-4 h-4", isRtl ? "ml-1.5" : "mr-1.5")} />
+                {t('contacts.addFirst')}
               </Button>
             )
           }
@@ -278,16 +284,16 @@ export function ContactList({
       ) : (
         <div className="bg-bg-secondary border border-border rounded-xl overflow-hidden shadow-xs">
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
+            <table className={cn("w-full border-collapse", isRtl ? "text-right" : "text-left")}>
               <thead>
                 <tr className="border-b border-border bg-bg-tertiary/40 text-[11px] font-semibold text-text-secondary">
-                  <th className="py-3 px-4">Name & Role</th>
-                  <th className="py-3 px-3">Company</th>
-                  <th className="py-3 px-3">Category</th>
-                  <th className="py-3 px-3">Stage</th>
-                  <th className="py-3 px-3">Priority</th>
-                  <th className="py-3 px-3 hidden md:table-cell">Touchpoints</th>
-                  <th className="py-3 px-4 text-right">Actions</th>
+                  <th className="py-3 px-4">{isRtl ? 'الاسم والمسمى' : 'Name & Role'}</th>
+                  <th className="py-3 px-3">{isRtl ? 'الشركة' : 'Company'}</th>
+                  <th className="py-3 px-3">{isRtl ? 'الفئة' : 'Category'}</th>
+                  <th className="py-3 px-3">{isRtl ? 'المرحلة' : 'Stage'}</th>
+                  <th className="py-3 px-3">{isRtl ? 'الأولوية' : 'Priority'}</th>
+                  <th className="py-3 px-3 hidden md:table-cell">{isRtl ? 'التفاعلات' : 'Touchpoints'}</th>
+                  <th className={cn("py-3 px-4", isRtl ? "text-left" : "text-right")}>{isRtl ? 'الإجراءات' : 'Actions'}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border text-xs">

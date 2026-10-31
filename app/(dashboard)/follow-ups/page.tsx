@@ -5,6 +5,8 @@ import { listCompaniesForSelect } from '@/src/server/data/companies'
 import { listOpportunitiesForSelect } from '@/src/server/data/opportunities'
 import { FollowUpBoard } from '@/src/components/follow-ups/follow-up-board'
 
+export const instant = false
+
 interface FollowUpsPageProps {
   searchParams: Promise<{
     tab?: 'overdue' | 'today' | 'upcoming' | 'completed' | 'all'

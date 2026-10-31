@@ -267,3 +267,20 @@ body {
   0% { background-position: 200% 0; }
   100% { background-position: -200% 0; }
 }
+
+/* ─── RTL & Arabic Typography Support ──────────────────── */
+
+[dir="rtl"] {
+  direction: rtl;
+  text-align: right;
+  font-family: system-ui, -apple-system, 'Segoe UI', Tahoma, 'Noto Sans Arabic', 'Cairo', sans-serif;
+}
+
+[dir="rtl"] .ltr-only {
+  direction: ltr;
+  text-align: left;
+}
+
+[dir="rtl"] .rtl-flip {
+  transform: scaleX(-1);
+}

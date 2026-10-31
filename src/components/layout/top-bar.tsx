@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { usePathname } from 'next/navigation'
 import Link from 'next/link'
-import { Sun, Moon, LogOut, Menu, X, Zap } from 'lucide-react'
+import { Sun, Moon, LogOut, Menu, X, Zap, Languages } from 'lucide-react'
 import {
   LayoutDashboard,
   Briefcase,
@@ -15,31 +15,49 @@ import {
   Settings,
 } from 'lucide-react'
 import { useTheme } from '@/src/components/theme-provider'
+import { useI18n } from '@/src/lib/i18n'
 import { cn } from '@/src/lib/utils'
 import { signOut } from 'next-auth/react'
 
-const mobileNavItems = [
-  { href: '/', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/opportunities', label: 'Opportunities', icon: Briefcase },
-  { href: '/companies', label: 'Companies', icon: Building2 },
-  { href: '/contacts', label: 'Contacts', icon: Users },
-  { href: '/messages', label: 'Message Studio', icon: MessageSquare },
-  { href: '/follow-ups', label: 'Follow-ups', icon: Bell },
-  { href: '/analytics', label: 'Analytics', icon: BarChart3 },
-  { href: '/settings', label: 'Settings', icon: Settings },
-]
-
 export function TopBar() {
   const { theme, toggleTheme } = useTheme()
+  const { locale, toggleLocale, t, isRtl } = useI18n()
   const pathname = usePathname()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
+  const mobileNavItems = [
+    { href: '/', label: t('nav.dashboard'), icon: LayoutDashboard },
+    { href: '/opportunities', label: t('nav.opportunities'), icon: Briefcase },
+    { href: '/companies', label: t('nav.companies'), icon: Building2 },
+    { href: '/contacts', label: t('nav.contacts'), icon: Users },
+    { href: '/messages', label: t('nav.messages'), icon: MessageSquare },
+    { href: '/follow-ups', label: t('nav.followUps'), icon: Bell },
+    { href: '/analytics', label: t('nav.analytics'), icon: BarChart3 },
+    { href: '/settings', label: t('nav.settings'), icon: Settings },
+  ]
+
   // Derive page title from pathname
   const getPageTitle = () => {
-    if (pathname === '/') return 'Dashboard'
+    if (pathname === '/') return t('nav.dashboard')
     const segment = pathname.split('/')[1]
-    if (!segment) return 'Dashboard'
-    return segment.charAt(0).toUpperCase() + segment.slice(1).replace(/-/g, ' ')
+    switch (segment) {
+      case 'opportunities':
+        return t('nav.opportunities')
+      case 'companies':
+        return t('nav.companies')
+      case 'contacts':
+        return t('nav.contacts')
+      case 'messages':
+        return t('nav.messages')
+      case 'follow-ups':
+        return t('nav.followUps')
+      case 'analytics':
+        return t('nav.analytics')
+      case 'settings':
+        return t('nav.settings')
+      default:
+        return segment ? segment.charAt(0).toUpperCase() + segment.slice(1).replace(/-/g, ' ') : t('nav.dashboard')
+    }
   }
 
   return (
@@ -49,7 +67,7 @@ export function TopBar() {
         <button
           className="md:hidden flex items-center justify-center w-8 h-8 rounded-md text-text-secondary hover:bg-bg-hover"
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          aria-label="Toggle menu"
+          aria-label={t('common.open')}
         >
           {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
         </button>
@@ -59,7 +77,7 @@ export function TopBar() {
           <div className="flex items-center justify-center w-7 h-7 rounded-md bg-accent text-black">
             <Zap className="w-3.5 h-3.5" />
           </div>
-          <span className="font-semibold text-text-primary text-sm">JobFlow AI</span>
+          <span className="font-semibold text-text-primary text-sm">{t('common.appName')}</span>
         </div>
 
         {/* Page title (desktop) */}
@@ -68,11 +86,23 @@ export function TopBar() {
         </h1>
 
         {/* Actions */}
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-2">
+          {/* Language Switcher */}
+          <button
+            onClick={toggleLocale}
+            className="flex items-center gap-1.5 px-2.5 h-8 rounded-md text-xs font-medium text-text-secondary hover:bg-bg-hover hover:text-text-primary transition-colors border border-border"
+            title={locale === 'en' ? t('common.switchLanguage') : 'Switch to English'}
+          >
+            <Languages className="w-3.5 h-3.5 text-accent" />
+            <span className="tracking-wide">{locale === 'en' ? 'العربية' : 'English'}</span>
+          </button>
+
+          {/* Theme Switcher */}
           <button
             onClick={toggleTheme}
             className="flex items-center justify-center w-8 h-8 rounded-md text-text-secondary hover:bg-bg-hover transition-colors"
             aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} theme`}
+            title={theme === 'dark' ? t('common.light') : t('common.dark')}
           >
             {theme === 'dark' ? (
               <Sun className="w-4 h-4" />
@@ -81,12 +111,14 @@ export function TopBar() {
             )}
           </button>
 
+          {/* Sign Out */}
           <button
             onClick={() => signOut({ callbackUrl: '/login' })}
             className="flex items-center justify-center w-8 h-8 rounded-md text-text-secondary hover:bg-bg-hover transition-colors"
-            aria-label="Sign out"
+            aria-label={t('common.signOut')}
+            title={t('common.signOut')}
           >
-            <LogOut className="w-4 h-4" />
+            <LogOut className={cn("w-4 h-4", isRtl && "scale-x-[-1]")} />
           </button>
         </div>
       </header>
@@ -99,14 +131,17 @@ export function TopBar() {
         >
           <div className="absolute inset-0 bg-black/50" />
           <nav
-            className="absolute left-0 top-0 bottom-0 w-64 bg-sidebar-bg border-r border-border p-4 animate-slide-in"
+            className={cn(
+              "absolute top-0 bottom-0 w-64 bg-sidebar-bg p-4 animate-slide-in",
+              isRtl ? "right-0 border-l border-border" : "left-0 border-r border-border"
+            )}
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center gap-2 mb-6">
               <div className="flex items-center justify-center w-8 h-8 rounded-md bg-accent text-black">
                 <Zap className="w-4 h-4" />
               </div>
-              <span className="font-semibold text-text-primary">JobFlow AI</span>
+              <span className="font-semibold text-text-primary">{t('common.appName')}</span>
             </div>
             <ul className="space-y-1">
               {mobileNavItems.map(item => {

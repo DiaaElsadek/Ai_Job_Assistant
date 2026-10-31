@@ -21,18 +21,21 @@ export interface GeneratedMessageOutput {
 export async function generateOutreachMessage(
   input: GenerateMessageInput
 ): Promise<GeneratedMessageOutput> {
-  const apiKey = process.env.AI_API_KEY
-  const model = process.env.AI_MODEL || 'gemini-2.0-flash'
+  const apiKey = (process.env.AI_API_KEY || process.env.GEMINI_API_KEY || '').trim()
+  const model = process.env.AI_MODEL || 'gemini-flash-latest'
 
   // If an API key is configured, call Gemini
-  if (apiKey && apiKey.trim().length > 10) {
+  if (apiKey && apiKey.length > 10) {
     try {
       const prompt = buildGeminiPrompt(input)
       const res = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`,
         {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            'x-goog-api-key': apiKey,
+          },
           body: JSON.stringify({
             contents: [{ parts: [{ text: prompt }] }],
             generationConfig: {
@@ -53,6 +56,9 @@ export async function generateOutreachMessage(
             explanation: `Generated with Gemini (${model}) tailored for ${input.language.toLowerCase().replace('_', ' ')} with ${input.tone.toLowerCase().replace('_', ' ')} tone.`,
           }
         }
+      } else {
+        const errData = await res.text()
+        console.warn(`Gemini API error (status ${res.status}):`, errData.slice(0, 200))
       }
     } catch (err) {
       console.warn('Gemini API call failed, falling back to dynamic template engine:', err)
